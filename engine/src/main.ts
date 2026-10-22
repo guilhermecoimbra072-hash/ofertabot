@@ -22,7 +22,7 @@ async function shutdown(){if(stopped)return;stopped=true;clearInterval(hb);await
 process.on('SIGINT',()=>{void shutdown();});process.on('SIGTERM',()=>{void shutdown();});
 const result=await supervise({
  heartbeat,
- startTransport:async()=>{await transport.start(async m=>{if(!sources.has(m.group_jid)||m.from_me)return;await queue.add(m);});console.info('OfertaBot iniciado. QR Code somente no painel privado. Ctrl+C para encerrar.');hb=setInterval(()=>{void heartbeat().catch(onHeartbeatError);},20000);},
+ startTransport:async()=>{await transport.start(async m=>{if(!sources.has(m.group_jid)||m.from_me)return;try{await queue.add(m);}catch{await queue.preserveFailure(m,'capture_failed');}});console.info('OfertaBot iniciado. QR Code somente no painel privado. Ctrl+C para encerrar.');hb=setInterval(()=>{void heartbeat().catch(onHeartbeatError);},20000);},
  syncGroups:async()=>{await api.call('groups',{groups:await transport.groups()});},
  flushCaptures:()=>queue.flush(),
  work:()=>worker.once(),

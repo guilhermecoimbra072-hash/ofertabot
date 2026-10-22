@@ -1,12 +1,13 @@
 import { z } from 'zod';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Json } from '@/integrations/supabase/types';
+import { bytesMatch, extensionFor, normalizeMime } from './media.ts';
 const jsonValue: z.ZodType<Json> = z.lazy(() => z.union([z.string(), z.number(), z.boolean(), z.null(), z.array(jsonValue), z.record(jsonValue)]));
 
 const headers = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };
 const response = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers });
 const envelope = z.object({ action: z.string(), payload: z.record(z.unknown()).default({}) });
-const uploadSchema = z.object({ mime: z.enum(['image/jpeg', 'image/png', 'image/webp']), key: z.string().regex(/^[a-f0-9]{64}$/), instance_id: z.string().uuid(), data: z.string().max(15000000) });
+const uploadSchema = z.object({ mime: z.string().min(1).max(120), key: z.string().regex(/^[a-f0-9]{64}$/), instance_id: z.string().uuid(), data: z.string().max(15000000) });
 const downloadSchema = z.object({ path: z.string().min(1).max(1024) });
 
 export const createEngineHandler = (db: SupabaseClient<Database>) => async (request: Request): Promise<Response> => {
@@ -29,13 +30,15 @@ export const createEngineHandler = (db: SupabaseClient<Database>) => async (requ
       const media = parsed.data;
       const { error: leaseError } = await db.rpc('engine_call', { p_token: token, p_action: 'groups', p_payload: { instance_id: media.instance_id, groups: [] } });
       if (leaseError) return response({ error: 'Motor sem lease' }, 409);
+      const mime = normalizeMime(media.mime);
+      const ext = extensionFor(mime);
+      if (!ext) return response({ error: 'Mídia inválida' }, 400);
       const bytes = Uint8Array.from(atob(media.data), c => c.charCodeAt(0));
       if (bytes.length > 10485760) return response({ error: 'Máximo 10 MB' }, 413);
-      const valid = media.mime === 'image/jpeg' ? bytes[0] === 255 && bytes[1] === 216 : media.mime === 'image/png' ? bytes[0] === 137 && bytes[1] === 80 && bytes[2] === 78 && bytes[3] === 71 : new TextDecoder().decode(bytes.slice(0, 4)) === 'RIFF' && new TextDecoder().decode(bytes.slice(8, 12)) === 'WEBP';
-      if (!valid) return response({ error: 'Conteúdo de imagem inválido' }, 400);
-      const path = `${ctx.company_id}/${ctx.connection_id}/${media.key}.${media.mime.split('/')[1]}`;
-      const { error } = await db.storage.from('offer-media').upload(path, bytes, { contentType: media.mime, upsert: false });
-      if (error && !['409', 'Duplicate'].includes(String(error.statusCode ?? ('error' in error ? error.error : ''))) && !error.message?.includes('already exists')) return response({ error: 'Falha ao preservar imagem' }, 502);
+      if (!bytesMatch(mime, bytes)) return response({ error: 'Conteúdo de mídia inválido' }, 400);
+      const path = `${ctx.company_id}/${ctx.connection_id}/${media.key}.${ext}`;
+      const { error } = await db.storage.from('offer-media').upload(path, bytes, { contentType: mime, upsert: false });
+      if (error && !['409', 'Duplicate'].includes(String(error.statusCode ?? ('error' in error ? error.error : ''))) && !error.message?.includes('already exists')) return response({ error: 'Falha ao preservar mídia' }, 502);
       return response({ path });
     }
     if (action === 'download') {
@@ -43,7 +46,7 @@ export const createEngineHandler = (db: SupabaseClient<Database>) => async (requ
       const { data: rows } = await db.from('publications').select('id').eq('connection_id', ctx.connection_id).eq('image', path).eq('status', 'processing').limit(1);
       if (!rows?.length || !path.startsWith(ctx.company_id + '/')) return response({ error: 'Arquivo não autorizado' }, 403);
       const { data, error } = await db.storage.from('offer-media').download(path);
-      if (error || !data) return response({ error: 'Imagem indisponível' }, 502);
+      if (error || !data) return response({ error: 'Mídia indisponível' }, 502);
       const b = new Uint8Array(await data.arrayBuffer());
       let s = '';
       for (let k = 0; k < b.length; k += 8192) s += String.fromCharCode(...b.subarray(k, k + 8192));

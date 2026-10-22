@@ -2,9 +2,20 @@ import {useEffect,useRef,useState} from 'react';
 import {signed,upload} from './api';
 import type {Company} from './model';
 type Rect={x:number;y:number;w:number;h:number};
+function useSigned(path:string){const [url,setUrl]=useState('');useEffect(()=>{let live=true;const run=()=>signed(path).then(u=>{if(live)setUrl(u);}).catch(()=>{if(live)setUrl('');});void run();const t=setInterval(run,90000);return()=>{live=false;clearInterval(t);};},[path]);return url;}
 export function PrivateImage({path,alt='Imagem da oferta'}:{path:string;alt?:string}){
- const [url,setUrl]=useState('');useEffect(()=>{let live=true;const run=()=>signed(path).then(u=>{if(live)setUrl(u);}).catch(()=>{if(live)setUrl('');});void run();const t=setInterval(run,90000);return()=>{live=false;clearInterval(t);};},[path]);
+ const url=useSigned(path);
  return url?<img src={url} alt={alt} className="offer-image"/>:<span className="muted">Imagem privada: aguardando carregamento</span>;
+}
+export function PrivateMedia({path,kind,alt='Mídia da oferta'}:{path:string;kind?:string;alt?:string}){
+ const url=useSigned(path);
+ if(!url)return <span className="muted">Mídia privada: aguardando carregamento</span>;
+ const ext=path.split('.').pop()?.toLowerCase()??'';
+ const media=kind??(['mp4'].includes(ext)?'video':['ogg','mp3','m4a'].includes(ext)?'audio':['pdf','doc','docx','xls','xlsx'].includes(ext)?'document':'image');
+ if(media==='video')return <video src={url} controls className="offer-image"/>;
+ if(media==='audio')return <audio src={url} controls/>;
+ if(media==='document')return <a href={url} target="_blank" rel="noreferrer">Abrir documento</a>;
+ return <img src={url} alt={alt} className="offer-image"/>;
 }
 const loadImage=(url:string)=>new Promise<HTMLImageElement>((resolve,reject)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('Não foi possível abrir a imagem'));im.src=url;});
 export function ImageEditor({company,path,onSave,onOriginal}:{company:Company;path:string|null;onSave:(path:string)=>void;onOriginal:(path:string)=>void}){

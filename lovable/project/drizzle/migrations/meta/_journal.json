@@ -15,6 +15,13 @@
       "when": 1792633034898,
       "tag": "0001_ofertabot_final_backend_revision",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792670000000,
+      "tag": "0002_archive_media",
+      "breakpoints": true
     }
   ]
 }

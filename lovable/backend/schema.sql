@@ -98,22 +98,32 @@ grant execute on function private.member_role(uuid) to authenticated;
 alter table private.engine_credentials enable row level security;
 alter table private.ai_usage enable row level security;
 
-create function public.app_snapshot(p_company uuid default null) returns jsonb language plpgsql security definer set search_path='' as $$
-declare c uuid; r text; result jsonb; begin
+create function public.app_snapshot(p_company uuid default null, p_search text default null, p_offer_offset int default 0, p_publication_offset int default 0, p_audit_offset int default 0, p_offer_status text default null) returns jsonb language plpgsql security definer set search_path='' as $$
+declare c uuid; r text; result jsonb; s text; oo int; po int; ao int; st text; begin
  if auth.uid() is null then raise exception 'Autenticação necessária' using errcode='42501'; end if;
  select coalesce(jsonb_agg(to_jsonb(x)),'[]') into result from (select co.*,m.role from public.companies co join public.members m on co.id=m.company_id where m.user_id=auth.uid() order by co.created_at) x;
  c:=coalesce(p_company,(result->0->>'id')::uuid);
  if c is null then return jsonb_build_object('companies',result); end if;
  perform private.require_role(c,array['owner','admin','editor','viewer']); r:=private.member_role(c);
+ s:=nullif(left(btrim(coalesce(p_search,'')),200),'');
+ oo:=least(greatest(coalesce(p_offer_offset,0),0),1000000);
+ po:=least(greatest(coalesce(p_publication_offset,0),0),1000000);
+ ao:=least(greatest(coalesce(p_audit_offset,0),0),1000000);
+ st:=case when p_offer_status in ('pending','approved','rejected') then p_offer_status else null end;
  return jsonb_build_object('companies',result,'company',(select to_jsonb(co)||jsonb_build_object('role',r) from public.companies co where id=c),
  'connections',(select coalesce(jsonb_agg((to_jsonb(x)-'instance_id'-'instance_until'-'qr')||jsonb_build_object('qr',case when r in ('owner','admin') and x.qr_expires_at>now() then x.qr else null end)),'[]') from public.connections x where company_id=c),
  'stats',jsonb_build_object('received',(select count(*) from public.offers where company_id=c),'pending',(select count(*) from public.offers where company_id=c and status='pending'),'sent',(select count(*) from public.publications where company_id=c and status='sent'),'failed',(select count(*) from public.publications where company_id=c and status='failed')),
  'groups',(select coalesce(jsonb_agg(to_jsonb(x) order by x.name),'[]') from public.groups x where company_id=c),
- 'offers',(select coalesce(jsonb_agg(to_jsonb(x)||jsonb_build_object('price_minor',x.price_minor::text) order by x.received_at desc),'[]') from (select * from public.offers where company_id=c order by received_at desc limit 500) x),
- 'publications',(select coalesce(jsonb_agg(to_jsonb(x)-'lease_token' order by x.created_at desc),'[]') from (select * from public.publications where company_id=c order by created_at desc limit 1000) x),
- 'audit',(select coalesce(jsonb_agg(to_jsonb(x) order by x.created_at desc),'[]') from (select * from public.audit where company_id=c order by created_at desc limit 200) x),
+ 'offers',(select coalesce(jsonb_agg(to_jsonb(x)||jsonb_build_object('price_minor',x.price_minor::text) order by x.received_at desc),'[]') from (select * from public.offers where company_id=c and (s is null or strpos(lower(original_text||' '||edited_text||' '||message_id), lower(s))>0) and (st is null or status=st) order by received_at desc offset oo limit 100) x),
+ 'publications',(select coalesce(jsonb_agg(to_jsonb(x)-'lease_token' order by x.created_at desc),'[]') from (select * from public.publications where company_id=c and (s is null or strpos(lower(text), lower(s))>0) order by created_at desc offset po limit 100) x),
+ 'audit',(select coalesce(jsonb_agg(to_jsonb(x) order by x.created_at desc),'[]') from (select * from public.audit where company_id=c and (s is null or strpos(lower(event), lower(s))>0) order by created_at desc offset ao limit 100) x),
  'templates',(select coalesce(jsonb_agg(to_jsonb(x)),'[]') from public.templates x where company_id=c),
- 'members',(select coalesce(jsonb_agg(jsonb_build_object('user_id',m.user_id,'email',u.email,'role',m.role)),'[]') from public.members m join auth.users u on u.id=m.user_id where m.company_id=c and r in ('owner','admin')));
+ 'members',(select coalesce(jsonb_agg(jsonb_build_object('user_id',m.user_id,'email',u.email,'role',m.role)),'[]') from public.members m join auth.users u on u.id=m.user_id where m.company_id=c and r in ('owner','admin')),
+ 'page',jsonb_build_object(
+  'offers',jsonb_build_object('offset',oo,'limit',100,'total',(select count(*)::int from public.offers where company_id=c and (s is null or strpos(lower(original_text||' '||edited_text||' '||message_id), lower(s))>0) and (st is null or status=st))),
+  'publications',jsonb_build_object('offset',po,'limit',100,'total',(select count(*)::int from public.publications where company_id=c and (s is null or strpos(lower(text), lower(s))>0))),
+  'audit',jsonb_build_object('offset',ao,'limit',100,'total',(select count(*)::int from public.audit where company_id=c and (s is null or strpos(lower(event), lower(s))>0)))
+ ));
 end $$;
 
 create function public.app_action(p_action text,p_payload jsonb) returns jsonb language plpgsql security definer set search_path='' as $$
@@ -143,7 +153,7 @@ declare c uuid; i uuid; o public.offers; co public.companies; pub public.publica
   update public.offers set original_images=case when p_payload->>'uploaded_original' is not null and not original_images ? (p_payload->>'uploaded_original') then original_images||jsonb_build_array(p_payload->>'uploaded_original') else original_images end,edited_text=coalesce(p_payload->>'edited_text',''),edited_image=p_payload->>'edited_image',price_minor=nullif(p_payload->>'price_minor','')::bigint,currency=coalesce(p_payload->>'currency','BRL'),status='pending',version=version+1 where id=i returning * into o;
   insert into public.offer_revisions(company_id,offer_id,version,content,actor_id) values(c,i,o.version,to_jsonb(o),auth.uid());
  when 'approve_offer' then
-  if o.media_status<>'ready' or o.media_kind not in ('text','image') then raise exception 'Mídia não processada: revisão necessária'; end if;
+  if o.media_status<>'ready' or o.media_kind not in ('text','image','video','audio','document') then raise exception 'Mídia não processada: revisão necessária'; end if;
   if trim(o.edited_text)='' and o.edited_image is null and jsonb_array_length(o.original_images)=0 then raise exception 'Oferta vazia'; end if;
   update public.offers set status='approved' where id=i;
  when 'reject_offer' then update public.offers set status='rejected' where id=i;
@@ -261,7 +271,7 @@ declare ctx jsonb; c uuid; cn uuid; co public.companies; con public.connections;
   end loop;
   result:='{}';
  when 'capture_error' then
-  perform private.log(c,'capture.failed',null,jsonb_build_object('message_hash',left(p_payload->>'message_hash',64),'code','permanent_rejection'));result:='{}';
+  perform private.log(c,'capture.failed',null,jsonb_build_object('message_hash',left(coalesce(p_payload->>'message_hash',''),64),'code',case when coalesce(p_payload->>'code','') ~ '^[a-z0-9_]{1,40}$' then p_payload->>'code' else 'capture_failed' end));result:='{}';
  when 'capture' then
   if coalesce((p_payload->>'from_me')::boolean,false) then return '{"ignored":"own_message"}'; end if;
   select * into g from public.groups where company_id=c and connection_id=cn and jid=p_payload->>'group_jid' and is_source and not is_destination;
@@ -289,7 +299,7 @@ declare ctx jsonb; c uuid; cn uuid; co public.companies; con public.connections;
   end if;
   update public.publications set status='processing',attempts=attempts+1,lease_token=gen_random_uuid(),lease_until=now()+interval '120 seconds',send_started_at=null where id=p.id returning * into p;
   perform private.log(c,'publication.claimed',p.id,jsonb_build_object('attempt',p.attempts));
-  result:=to_jsonb(p)||jsonb_build_object('jid',(select jid from public.groups where id=p.group_id));
+  result:=to_jsonb(p)||jsonb_build_object('jid',(select jid from public.groups where id=p.group_id),'media_kind',(select media_kind from public.offers where id=p.offer_id));
  when 'begin_send' then
   select * into p from public.publications where id=(p_payload->>'id')::uuid and connection_id=cn and status='processing' and lease_token=(p_payload->>'lease_token')::uuid and lease_until>now() and send_started_at is null for update;
   if not found then raise exception 'Publicação cancelada, iniciada ou lease expirada'; end if;
@@ -340,14 +350,14 @@ declare lim int; begin
  perform private.log(p_company,'plan.assigned',p_company,jsonb_build_object('plan',p_plan,'limit',lim));
 end $$;
 
-insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types) values('offer-media','offer-media',false,10485760,array['image/png','image/jpeg','image/webp']) on conflict(id) do update set public=false,file_size_limit=10485760,allowed_mime_types=excluded.allowed_mime_types;
+insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types) values('offer-media','offer-media',false,10485760,array['image/png','image/jpeg','image/webp','video/mp4','audio/ogg','audio/mpeg','audio/mp4','application/pdf','application/msword','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']) on conflict(id) do update set public=false,file_size_limit=10485760,allowed_mime_types=excluded.allowed_mime_types;
 create policy media_read on storage.objects for select to authenticated using(bucket_id='offer-media' and private.member_role((string_to_array(name,'/'))[1]::uuid) is not null);
 create policy media_insert on storage.objects for insert to authenticated with check(bucket_id='offer-media' and private.member_role((string_to_array(name,'/'))[1]::uuid) in ('owner','admin','editor'));
 -- Sem UPDATE/DELETE: originais e snapshots publicados são imutáveis pelo cliente.
 revoke all on all functions in schema private from public, anon, authenticated;
 grant execute on function private.member_role(uuid) to authenticated;
-revoke all on function public.app_snapshot(uuid),public.app_action(text,jsonb),public.ai_authorize(uuid,uuid),public.engine_context(text),public.engine_call(text,text,jsonb),public.admin_set_plan(uuid,text,int) from public,anon,authenticated;
-grant execute on function public.app_snapshot(uuid),public.app_action(text,jsonb),public.ai_authorize(uuid,uuid) to authenticated;
+revoke all on function public.app_snapshot(uuid,text,int,int,int,text),public.app_action(text,jsonb),public.ai_authorize(uuid,uuid),public.engine_context(text),public.engine_call(text,text,jsonb),public.admin_set_plan(uuid,text,int) from public,anon,authenticated;
+grant execute on function public.app_snapshot(uuid,text,int,int,int,text),public.app_action(text,jsonb),public.ai_authorize(uuid,uuid) to authenticated;
 grant execute on function public.engine_context(text),public.engine_call(text,text,jsonb),public.admin_set_plan(uuid,text,int) to service_role;
 
 grant select,insert,update,delete on all tables in schema public to service_role;

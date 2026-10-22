@@ -4,6 +4,7 @@ import type {Incoming,Transport} from './types.js';
 import {Vault} from './vault.js';
 import {matchesExpectedAccount} from './account.js';
 import {disconnectCode,formatDisconnectCode,planReconnect} from './reconnect.js';
+import {bytesMatch,extensionFor,normalizeMime} from './media.js';
 const logger=pino({level:'silent'});
 type Scheduler=(fn:()=>void,ms:number)=>{cancel:()=>void};
 const defaultSchedule:Scheduler=(fn,ms)=>{const timer=setTimeout(fn,ms);return {cancel:()=>clearTimeout(timer)};};
@@ -58,25 +59,35 @@ export class BaileysTransport implements Transport {
     if(current!==this.generation||type!=='notify'||this.status!=='connected')return;
     for(const m of messages){
      if(m.key.fromMe || !m.key.remoteJid?.endsWith('@g.us') || !m.key.id)continue;
+     const base:Incoming={message_id:m.key.id,group_jid:m.key.remoteJid,received_at:new Date(Number(m.messageTimestamp??Math.floor(Date.now()/1000))*1000).toISOString(),from_me:false,text:'',media_kind:'unsupported',media_status:'failed'};
      void (async()=>{
-      const body=normalizeMessageContent(m.message);if(!body)return;
-      const im=body.imageMessage;
-      const kind=im?'image':body.videoMessage?'video':body.audioMessage?'audio':body.documentMessage?'document':body.conversation||body.extendedTextMessage?'text':'unsupported';
-      const incoming:Incoming={message_id:m.key.id!,group_jid:m.key.remoteJid!,received_at:new Date(Number(m.messageTimestamp??Math.floor(Date.now()/1000))*1000).toISOString(),from_me:false,text:body.conversation??body.extendedTextMessage?.text??im?.caption??body.videoMessage?.caption??'',media_kind:kind,media_status:kind==='text'||kind==='image'?'ready':'unsupported'};
-      if(im){
-       if(Number(im.fileLength??0)>10*1024*1024){incoming.media_status='failed';}
-       else try{const buf=await downloadMediaMessage(m,'buffer',{}, {logger,reuploadRequest:sock.updateMediaMessage});if(buf.length>10*1024*1024)throw new Error('Imagem grande');incoming.image=buf;incoming.mime=im.mimetype??'image/jpeg';}catch{incoming.media_status='failed';}
+      const body=normalizeMessageContent(m.message);
+      if(!body){await onMessage(base);return;}
+      const im=body.imageMessage,vm=body.videoMessage,am=body.audioMessage,dm=body.documentMessage;
+      const kind=im?'image':vm?'video':am?'audio':dm?'document':body.conversation||body.extendedTextMessage?'text':'unsupported';
+      const media=im??vm??am??dm;
+      const declared=normalizeMime(media?.mimetype??(kind==='image'?'image/jpeg':kind==='video'?'video/mp4':kind==='audio'?'audio/ogg':kind==='document'?'application/pdf':''));
+      const known=kind==='text'||!!extensionFor(declared);
+      const incoming:Incoming={...base,text:body.conversation??body.extendedTextMessage?.text??im?.caption??vm?.caption??dm?.caption??'',media_kind:kind,media_status:kind==='text'?'ready':known?'ready':'unsupported',mime:media?declared:undefined};
+      if(media&&known){
+       if(Number(media.fileLength??0)>10*1024*1024)incoming.media_status='failed';
+       else try{const buf=await downloadMediaMessage(m,'buffer',{},{logger,reuploadRequest:sock.updateMediaMessage});if(buf.length>10*1024*1024||!bytesMatch(declared,buf))incoming.media_status='failed';else{incoming.image=buf;incoming.media_status='ready';}}catch{incoming.media_status='failed';}
       }
       await onMessage(incoming);
-     })().catch(()=>console.error('capture_failed: não foi possível preservar uma captura; consulte o grupo original'));
+     })().catch(async()=>{
+      console.error('capture_failed: captura preservada como falha; confira o histórico');
+      try{await onMessage(base);}catch{console.error('capture_unpreserved: o cofre recusou a falha');}
+     });
     }
    });
   };connect();
  }
  async groups(){if(!this.socket||this.status!=='connected')return [];const gs=await this.socket.groupFetchAllParticipating();return Object.values(gs).map(g=>({jid:g.id,name:g.subject}));}
- async send(jid:string,text:string,image?:Buffer){
+ async send(jid:string,text:string,file?:Buffer,kind?:string,mime?:string){
   if(!this.socket||this.status!=='connected')throw new Error('WhatsApp desconectado');
-  const message=await this.socket.sendMessage(jid,image?{image,caption:text}:{text});const id=message?.key.id;if(!id)throw new Error('Sem identificador');
+  const ext=mime?extensionFor(mime)??'bin':'bin';
+  const content=!file?{text}:kind==='video'?{video:file,caption:text,mimetype:mime??'video/mp4'}:kind==='audio'&&text.trim()?{document:file,mimetype:mime??'audio/ogg',fileName:`audio.${ext}`,caption:text}:kind==='audio'?{audio:file,mimetype:mime??'audio/ogg',ptt:false as const}:kind==='document'?{document:file,mimetype:mime??'application/pdf',fileName:`oferta.${ext}`,caption:text}:{image:file,caption:text};
+  const message=await this.socket.sendMessage(jid,content);const id=message?.key.id;if(!id)throw new Error('Sem identificador');
   if((message.status??0)>=proto.WebMessageInfo.Status.SERVER_ACK || this.acknowledgements.has(id))return id;
   await new Promise<void>((resolve,reject)=>{
    const timer=setTimeout(()=>{this.listeners.delete(id);reject(new Error('Confirmação não recebida'));},45000);

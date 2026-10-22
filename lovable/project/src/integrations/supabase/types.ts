@@ -446,7 +446,7 @@ export type Database = {
         Returns: Json
       }
       app_action: { Args: { p_action: string; p_payload: Json }; Returns: Json }
-      app_snapshot: { Args: { p_company?: string }; Returns: Json }
+      app_snapshot: { Args: { p_company?: string; p_search?: string | null; p_offer_offset?: number; p_publication_offset?: number; p_audit_offset?: number; p_offer_status?: string | null }; Returns: Json }
       engine_call: {
         Args: { p_action: string; p_payload?: Json; p_token: string }
         Returns: Json

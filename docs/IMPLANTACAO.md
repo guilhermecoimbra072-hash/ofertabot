@@ -31,7 +31,7 @@ Use apenas se escolher hospedar fora do Lovable Cloud ou se a implantação Lova
 2. Publicar `engine-api` e `rewrite` com `verify_jwt=false`, como `supabase/config.toml`. O gateway valida token revogável; reescrita valida JWT via `auth.getUser` e autorização de empresa antes de qualquer chamada externa.
 3. Os segredos padrão `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` e `SUPABASE_ANON_KEY` ficam no runtime das funções, nunca no navegador/motor.
 4. Configurar as variáveis públicas do painel no `.env` e construir com `npm run build`. Publicar `dist/web` em hospedagem HTTPS com fallback para `index.html`.
-5. IA opcional: definir `OPENAI_API_KEY` e opcionalmente `OPENAI_MODEL` no backend; padrão `gpt-4.1-mini`. Isso usa créditos da API do usuário. Nenhuma chave foi solicitada ou contratada na entrega.
+5. IA: no painel publicado a reescrita já usa `LOVABLE_API_KEY` e `https://ai.gateway.lovable.dev/v1/chat/completions` (provedor padrão `lovable`, modelo padrão `openai/gpt-6-luna`, sem `temperature`; `AI_PROVIDER`, `AI_BASE_URL`, `AI_API_KEY` e `AI_MODEL` podem substituir). Não é preciso cadastrar chave da OpenAI. A função de borda deste repositório usa a mesma chave e o mesmo gateway; sem `AI_MODEL`, o modelo dela é `google/gemini-2.5-flash`. Sem `LOVABLE_API_KEY`, essa função ainda aceita `OPENAI_API_KEY` e `OPENAI_MODEL`. Sem nenhuma das duas, a edição manual continua.
 6. Executar os testes e um ensaio real com grupos escolhidos pelo usuário.
 
 `node scripts/sync-adapters.mjs` regenera adaptadores Deno e variante SQL Cloud a partir de `server/` e `supabase/schema.sql`, evitando duas implementações divergentes. O motor usa a URL selecionada no `.env` e não precisa mudar seu protocolo.

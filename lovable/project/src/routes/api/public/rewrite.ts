@@ -5,7 +5,9 @@ export const Route = createFileRoute('/api/public/rewrite')({
     handlers: {
       POST: async ({ request }) => {
         const { createRewriteHandler } = await import('@/server/rewrite-handler.server');
-        return createRewriteHandler({ url: process.env['SUPABASE_URL'] ?? '', publishableKey: process.env['SUPABASE_PUBLISHABLE_KEY'] ?? process.env['SUPABASE_ANON_KEY'] ?? '', aiKey: process.env['OPENAI_API_KEY'], model: process.env['OPENAI_MODEL'] })(request);
+        const lovableKey = process.env['LOVABLE_API_KEY'];
+        const openAIKey = process.env['OPENAI_API_KEY'];
+        return createRewriteHandler({ url: process.env['SUPABASE_URL'] ?? '', publishableKey: process.env['SUPABASE_PUBLISHABLE_KEY'] ?? process.env['SUPABASE_ANON_KEY'] ?? '', aiKey: lovableKey || openAIKey, endpoint: lovableKey ? 'https://ai.gateway.lovable.dev/v1/chat/completions' : 'https://api.openai.com/v1/chat/completions', model: process.env['AI_MODEL'] || (lovableKey ? 'google/gemini-2.5-flash' : process.env['OPENAI_MODEL']) })(request);
       },
       OPTIONS: async ({ request }) => (await import('@/server/rewrite-handler.server')).createRewriteHandler({ url: '', publishableKey: '' })(request),
       GET: async ({ request }) => (await import('@/server/rewrite-handler.server')).createRewriteHandler({ url: '', publishableKey: '' })(request),
