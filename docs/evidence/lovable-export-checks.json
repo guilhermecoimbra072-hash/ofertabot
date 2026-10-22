@@ -1,0 +1,17 @@
+{
+  "checked_at": "2026-10-22T02:06:48.265595+00:00",
+  "published_commit": "2d9c7a5ceee61a701a7c890e885c95a6c1be5b94",
+  "local_export_checks": {
+    "install": "bun 1.4.3 install --frozen-lockfile: exit 0",
+    "typecheck": "tsc --noEmit: exit 0",
+    "tests": "Vitest 4.1.11: 5 files, 40 tests passed",
+    "build": "Vite 8.1.5 client + SSR + Nitro cloudflare-module: exit 0",
+    "build_credentials": "public dummy values; no production credentials"
+  },
+  "not_tested": [
+    "valid production account",
+    "confirmation or recovery email",
+    "authenticated production storage",
+    "WhatsApp pairing and sending"
+  ]
+}

@@ -1,0 +1,20 @@
+import {cp,mkdir,readFile,writeFile} from 'node:fs/promises';
+import {resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const out=resolve(process.env.OFERTABOT_PACKAGE_DIR??resolve(root,'.artifacts/ofertabot-motor'));
+const source=JSON.parse(await readFile(resolve(root,'package.json'),'utf8'));
+await mkdir(resolve(out,'engine'),{recursive:true});await mkdir(resolve(out,'scripts'),{recursive:true});
+await cp(resolve(root,'engine/src'),resolve(out,'engine/src'),{recursive:true});
+await cp(resolve(root,'engine/tsconfig.json'),resolve(out,'engine/tsconfig.json'));
+for(const name of ['setup.mjs','health.mjs','instalar-windows.ps1','instalar-macos.sh'])await cp(resolve(root,'scripts',name),resolve(out,'scripts',name));
+await cp(resolve(root,'PRIMEIRO-TESTE.md'),resolve(out,'PRIMEIRO-TESTE.md'));
+await mkdir(resolve(out,'docs'),{recursive:true});
+for(const name of ['ENTREGA.md','OPERACAO.md','CONTRATO.md','WHATSAPP-LOVABLE.md','IMPLANTACAO.md'])await cp(resolve(root,'docs',name),resolve(out,'docs',name));
+await writeFile(resolve(out,'package.json'),JSON.stringify({name:'ofertabot-motor',version:source.version,private:true,type:'module',engines:source.engines,scripts:{build:'tsc -p engine/tsconfig.json',setup:'node scripts/setup.mjs',engine:'node --env-file=.env dist/engine/main.js',health:'node --env-file=.env scripts/health.mjs'},dependencies:Object.fromEntries(['@whiskeysockets/baileys','pino'].map(k=>[k,source.dependencies[k]])),devDependencies:Object.fromEntries(['typescript','@types/node'].map(k=>[k,source.devDependencies[k]]))},null,2)+'\n');
+await writeFile(resolve(out,'.env.example'),'# URL pública do motor e token emitido no painel da sua empresa.\nENGINE_URL=\nENGINE_TOKEN=\nENGINE_SESSION_KEY=\nENGINE_DATA_DIR=.engine-data\nENGINE_TRANSPORT=baileys\n# Opcional: conta permitida, com DDI; não é destinatário.\nENGINE_EXPECTED_PHONE=\n');
+for(const name of ['Dockerfile','compose.yaml','.dockerignore'])await cp(resolve(root,name),resolve(out,name));
+try{await cp(resolve(root,'deployment.json'),resolve(out,'deployment.json'));}catch(e){if(e.code!=='ENOENT')throw e;}
+await writeFile(resolve(out,'.gitignore'),'node_modules/\ndist/\n.env\n.engine-data/\n');
+await writeFile(resolve(out,'README.md'),`# Motor OfertaBot\n\nRequer Node.js 24 LTS. Na pasta extraída, execute:\n\n\`\`\`sh\nnpm ci\nnpm run build\nnpm run setup\n\`\`\`\n\nNo Windows, use npm.cmd se o PowerShell bloquear npm. Abra .env e preencha ENGINE_URL e ENGINE_TOKEN emitidos em Motor e IA no painel publicado. Preserve ENGINE_SESSION_KEY. Para restringir a conta, informe ENGINE_EXPECTED_PHONE com DDI; esse campo não é um destinatário. Execute npm run engine, abra WhatsApp no painel e leia o QR privado com o celular. Escolha grupos distintos de origem e destino de teste; depois habilite envios no painel e crie uma publicação de oferta aprovada.\n\nO motor não abre portas. Mantenha notebook ligado e conectado. Ctrl+C encerra preservando a sessão. Não compartilhe .env, .engine-data nem QR. A integração Baileys é não oficial. Nenhum transporte real foi executado na preparação deste pacote. Notebook offline retém agendamentos vencidos conforme tolerância; resultados incertos exigem revisão e não são repetidos automaticamente.\n\nUse npm run health para conferir comunicação. Docker: docker compose build e docker compose up -d, somente após configurar .env. Não execute notebook e VPS ao mesmo tempo para a mesma credencial.\n`);
+console.log('Pacote do motor preparado em '+out+'. Gere o lockfile, instale e compile antes de distribuir.');

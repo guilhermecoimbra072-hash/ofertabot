@@ -1,0 +1,7 @@
+{
+  "panel_url": "https://ofertabot-central.lovable.app",
+  "engine_url": "https://ofertabot-central.lovable.app/api/public/engine-api",
+  "rewrite_url": "https://ofertabot-central.lovable.app/api/public/rewrite",
+  "lovable_project_id": "6b91e5a7-7773-40fe-95df-8db9622278c5",
+  "lovable_commit": "c687b5ae647fec3ac950ade6ab2cb335260edda2"
+}

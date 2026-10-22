@@ -1,0 +1,23 @@
+{
+  "name": "ofertabot-motor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "build": "tsc -p engine/tsconfig.json",
+    "setup": "node scripts/setup.mjs",
+    "engine": "node --env-file=.env dist/engine/main.js",
+    "health": "node --env-file=.env scripts/health.mjs"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "7.0.0-rc14",
+    "pino": "9.6.0"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "@types/node": "22.15.30"
+  }
+}

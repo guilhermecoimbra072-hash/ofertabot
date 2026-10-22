@@ -1,0 +1,48 @@
+{
+  "name": "ofertabot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build && tsc -p engine/tsconfig.json",
+    "typecheck": "tsc --noEmit && tsc -p engine/tsconfig.json --noEmit",
+    "test": "node --import tsx tests/run.ts",
+    "test:ui": "playwright test",
+    "engine": "node --env-file=.env dist/engine/main.js",
+    "engine:dev": "node --import tsx --env-file=.env engine/src/main.ts",
+    "setup": "node scripts/setup.mjs",
+    "preview": "vite preview --host 127.0.0.1",
+    "check": "npm run typecheck && npm test && npm run build",
+    "test:postgres": "node --import tsx -e \"process.env.OFERTABOT_TEST_POSTGRES='1'; import('./tests/postgres-concurrency.test.ts')\"",
+    "test:local": "node --import tsx -e \"process.env.OFERTABOT_LOCAL_INTEGRATION='1'; import('./tests/local-stack.test.ts')\""
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.118.0",
+    "@whiskeysockets/baileys": "7.0.0-rc14",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "lucide-react": "0.468.0",
+    "qrcode": "1.5.4",
+    "pino": "9.6.0",
+    "tesseract.js": "6.0.1",
+    "luxon": "3.7.2"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.11",
+    "@playwright/test": "1.56.1",
+    "@types/node": "22.15.30",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "@types/qrcode": "1.5.5",
+    "@types/luxon": "3.7.1",
+    "typescript": "5.9.3",
+    "tsx": "4.20.6",
+    "vite": "7.3.7",
+    "@vitejs/plugin-react": "5.1.0",
+    "supabase": "2.121.0"
+  }
+}

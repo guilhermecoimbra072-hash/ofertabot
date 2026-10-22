@@ -1,0 +1,21 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1792632737427,
+      "tag": "0000_ofertabot_backend",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792633034898,
+      "tag": "0001_ofertabot_final_backend_revision",
+      "breakpoints": true
+    }
+  ]
+}
+

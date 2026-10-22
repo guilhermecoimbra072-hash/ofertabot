@@ -1,0 +1,44 @@
+{
+  "url": "https://ofertabot-central.lovable.app/",
+  "checked_at": "2026-10-22T01:58:18.338Z",
+  "results": [
+    {
+      "path": "/api/public/engine-api",
+      "method": "GET",
+      "status": 405
+    },
+    {
+      "path": "/api/public/engine-api",
+      "method": "POST",
+      "status": 401
+    },
+    {
+      "path": "/api/public/engine-api",
+      "method": "POST",
+      "status": 403
+    },
+    {
+      "path": "/api/public/rewrite",
+      "method": "POST",
+      "status": 401
+    },
+    {
+      "check": "Auth publicado rejeita login inexistente",
+      "status": 400
+    },
+    {
+      "check": "desktop",
+      "width": 1440,
+      "height": 1000,
+      "overflow": false,
+      "javascriptErrors": 0
+    },
+    {
+      "check": "mobile",
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "javascriptErrors": 0
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+.engine-data/
+test-results/
+playwright-report/
+*.log
+.superpowers/
+supabase/.temp/
+supabase/.branches/
+
+.artifacts/

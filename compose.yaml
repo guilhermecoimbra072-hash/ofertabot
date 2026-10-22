@@ -1,0 +1,18 @@
+services:
+  engine:
+    build: .
+    restart: unless-stopped
+    init: true
+    env_file: .env
+    environment:
+      ENGINE_DATA_DIR: /app/.engine-data
+    volumes:
+      - engine-data:/app/.engine-data
+    # Somente HTTPS de saída. Nenhuma porta publicada.
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+volumes:
+  engine-data:
