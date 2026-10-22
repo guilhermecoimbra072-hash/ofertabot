@@ -60,13 +60,13 @@ No Windows pode usar `npm.cmd run engine`. Mantenha esse terminal aberto e evite
 
 ## 5. Vincular o WhatsApp
 
-Abra **WhatsApp → Mostrar QR Code privado**. No celular, WhatsApp → Aparelhos conectados → Conectar aparelho. Leia o QR. Espere o estado Conectado. Não compartilhe esse QR. Se ele vencer, o motor envia outro; se as tentativas de reconexão se esgotarem, reinicie o motor.
+Abra **WhatsApp → Mostrar QR Code privado**. No celular, WhatsApp → Aparelhos conectados → Conectar aparelho. Leia o QR. Espere o estado Conectado. Não compartilhe esse QR. Se ele vencer, o motor envia outro. Uma queda temporária reconecta sozinha; só reinicie o motor se o console mostrar `logged_out`.
 
 Se o WhatsApp tiver encerrado a sessão, pare o motor e siga a reinicialização de sessão em `docs/OPERACAO.md`; não apague arquivos indiscriminadamente.
 
 ## 6. Escolher origem e destino de teste
 
-Em **Grupos**, aguarde até um minuto pela sincronização. Marque um grupo como **Origem** e outro como **Destino**. Use um grupo de destino controlado por você. Um grupo não pode ser origem e destino ao mesmo tempo.
+Em **Grupos**, a lista chega ao conectar e de novo se o WhatsApp reconectar; a atualização seguinte, com a sessão estável, pode levar até 15 minutos. Marque um grupo como **Origem** e outro como **Destino**. Use um grupo de destino controlado por você. Um grupo não pode ser origem e destino ao mesmo tempo.
 
 Em **Motor e IA**, habilite explicitamente os envios e salve. Isso não envia nada por si só: permite executar publicações aprovadas que você criar. A automação por captura continua desligada.
 

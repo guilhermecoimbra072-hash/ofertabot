@@ -16,7 +16,7 @@ Atualização: cadastro e redefinição aceitam senhas a partir de **6 caractere
 
 Login/cadastro/recuperação; empresa e permissões; dashboard com dados reais e estados vazios; credencial revogável; QR privado; grupos; captura de texto/imagem com deduplicação; edição e versões; aprovação; publicação por destino; agendamento com fuso; retenção de vencidos; histórico e revisão de resultado incerto; marca/modelos; IA opcional; editor Canvas com preço manual e OCR; planos com limites no backend; RLS e armazenamento privado.
 
-Motor Node/TypeScript com comunicação HTTPS de saída, sessão e fila criptografadas, reconexão limitada, recibos persistentes e Baileys fixado. Restrição opcional de conta impede operação com número diferente do configurado. Transporte simulado é exclusivo de testes. Envios começam desabilitados; capturas nunca são aprovadas ou publicadas automaticamente.
+Motor Node/TypeScript com comunicação HTTPS de saída, sessão e fila criptografadas, reconexão contínua com atraso curto, recibos persistentes e Baileys fixado. Restrição opcional de conta impede operação com número diferente do configurado. Transporte simulado é exclusivo de testes. Envios começam desabilitados; capturas nunca são aprovadas ou publicadas automaticamente.
 
 O painel TanStack publicado foi adaptado pelo Lovable a partir do contrato e funcionalidades, preservando o cliente e as rotas da plataforma; não é cópia literal do painel Vite do pacote portável. Ambos usam o mesmo protocolo. Não há dois bancos operacionais.
 

@@ -6,13 +6,13 @@
 
 Se `ENGINE_EXPECTED_PHONE` estiver preenchido, o motor só opera quando o número da conta vinculada corresponde à configuração. Uma identidade não verificável ou diferente mantém a conexão bloqueada (`account_mismatch`), sem captura nem envio; pare o processo e revise a sessão. Não há logout automático nem exclusão de arquivos.
 
-Uma instância por credencial. Ctrl+C preserva a sessão. A reconexão tenta até 8 vezes, com atraso exponencial limitado a 60s e jitter. Um logout no WhatsApp interrompe a reconexão automática; a sessão não é apagada silenciosamente.
+Uma instância por credencial. Ctrl+C preserva a sessão. Se o processo reiniciar enquanto a lease de 90s ainda pertence à instância anterior, ele espera e tenta de novo em vez de encerrar; o painel recebe o estado real (inclusive desconectado) no próximo heartbeat aceito. A reconexão do WhatsApp continua indefinidamente, com atraso de 1s dobrando até o teto de 5s, mais até 1s de jitter. O código 515 (restartRequired, depois do pareamento) reconecta na hora. Um logout no WhatsApp interrompe a reconexão automática e o console explica como gerar outro QR; a sessão não é apagada.
 
 Para vincular novamente após logout: pare o processo, renomeie apenas `.engine-data/session.enc` para um backup local protegido e reinicie. Preserve `inbox.enc`, recibos e a chave AES; sem ela não é possível restaurar a fila. Revogar a credencial no painel exige emitir outra e atualizar `.env`.
 
 ## Saúde e logs
 
-`node --env-file=.env scripts/health.mjs` retorna código 0 se houve comunicação nos últimos 90s. `.engine-data/health.json` contém somente horário, estado e quantidade de capturas pendentes. Logs de console têm códigos de falha, sem QR, token ou texto das ofertas. No painel, Histórico contém auditoria de capturas, revisões, aprovações, agendamentos e tentativas/resultados.
+`node --env-file=.env scripts/health.mjs` retorna código 0 se houve comunicação nos últimos 90s. `.engine-data/health.json` contém somente horário, estado e quantidade de capturas pendentes. Cada conexão, queda (com código), tentativa de reconexão e resultado de envio sai em uma linha, sem QR, token, texto da oferta ou telefone completo. Credencial rejeitada encerra com `credential_rejected`, sem stack. No painel, Histórico contém auditoria de capturas, revisões, aprovações, agendamentos e tentativas/resultados.
 
 Não execute o motor com log de depuração do Baileys em produção; ele está configurado como silencioso. Capturas pendentes no cofre são limitadas a 200 para evitar crescimento indefinido. Se atingir esse limite, o console indica falha; confira o grupo original. O sistema não promete recuperar todas as mensagens ocorridas durante um desligamento prolongado.
 
@@ -37,7 +37,7 @@ Não foi contratado backup pago. Retenção, disponibilidade e restauração do 
 
 ## VPS com Docker
 
-Arquivos `Dockerfile` e `compose.yaml` estão preparados. O serviço não publica portas. Copie `.env` por canal seguro e mantenha volume privado persistente. Pare o notebook antes de iniciar a VPS e aguarde 90s para a lease anterior expirar.
+Arquivos `Dockerfile` e `compose.yaml` estão preparados. O serviço não publica portas. Copie `.env` por canal seguro e mantenha volume privado persistente. Pare o notebook antes de iniciar a VPS. Se a lease de 90s ainda estiver ativa, o novo processo espera e publica o estado real, em vez de encerrar com “Outro motor está ativo”.
 
 ```sh
 docker compose build
