@@ -56,7 +56,7 @@ Header `Authorization: Bearer ob_<64 caracteres hexadecimais>`. Token tem aproxi
 | `begin_send` | revalida lease, destino e habilitação; registra início e reserva intervalo mínimo |
 | `finish` | confirma sent+transport_id, falha segura anterior ao envio ou uncertain após início |
 
-O loop usa polling de 5s e heartbeat independente de 20s. Grupos são atualizados a cada minuto. O processo não expõe portas. Revogação impede próximas chamadas; não consegue desfazer um envio que já chegou ao transporte.
+O loop usa polling de 5s e heartbeat independente de 20s. Grupos são sincronizados ao conectar (e de novo em cada reconexão) e, enquanto a sessão permanece aberta, a cada 15 minutos. O processo não expõe portas. Revogação impede próximas chamadas; não consegue desfazer um envio que já chegou ao transporte.
 
 ## Falhas, reinício e concorrência
 
