@@ -7,6 +7,16 @@ export function PrivateImage({path,alt='Imagem da oferta'}:{path:string;alt?:str
  const [url,setUrl]=useState(''),[error,setError]=useState('');useEffect(()=>{let live=true;setUrl('');setError('');const run=()=>signed(path).then(u=>{if(live){setUrl(u);setError('');}}).catch(()=>{if(live)setError('Não foi possível carregar a imagem privada.');});void run();const t=setInterval(run,90000);return()=>{live=false;clearInterval(t);};},[path]);
  return url?<img src={url} alt={alt} className="offer-image" onError={()=>{setUrl('');setError('Imagem privada indisponível.');}}/>:<span className="muted" role="status">{error||'Carregando imagem privada…'}</span>;
 }
+export function PrivateMedia({path,kind,alt='Mídia da oferta'}:{path:string;kind?:string;alt?:string}){
+ const [url,setUrl]=useState(''),[error,setError]=useState('');useEffect(()=>{let live=true;setUrl('');setError('');const run=()=>signed(path).then(u=>{if(live){setUrl(u);setError('');}}).catch(()=>{if(live)setError('Não foi possível carregar a mídia privada.');});void run();const t=setInterval(run,90000);return()=>{live=false;clearInterval(t);};},[path]);
+ if(!url)return <span className="muted" role="status">{error||'Carregando mídia privada…'}</span>;
+ const ext=path.split('.').pop()?.toLowerCase()??'';
+ const media=kind??(['mp4'].includes(ext)?'video':['ogg','mp3','m4a'].includes(ext)?'audio':['pdf','doc','docx','xls','xlsx'].includes(ext)?'document':'image');
+ if(media==='video')return <video src={url} controls className="offer-image"/>;
+ if(media==='audio')return <audio src={url} controls/>;
+ if(media==='document')return <a href={url} target="_blank" rel="noreferrer">Abrir documento</a>;
+ return <img src={url} alt={alt} className="offer-image"/>;
+}
 const loadImage=(url:string)=>new Promise<HTMLImageElement>((resolve,reject)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('Não foi possível abrir a imagem'));im.src=url;});
 export function ImageEditor({company,path,onSave,onOriginal}:{company:Company;path:string|null;onSave:(path:string)=>void;onOriginal:(path:string)=>void}){
  const canvas=useRef<HTMLCanvasElement>(null),base=useRef<HTMLImageElement|null>(null),logo=useRef<HTMLImageElement|null>(null),start=useRef<{x:number;y:number}|null>(null);

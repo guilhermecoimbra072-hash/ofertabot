@@ -5,7 +5,7 @@ import {snapshotSchema,type Snapshot} from './model';
 import {resolveEngineUrl} from './schedule';
 export const db=supabase;
 export const configured=!!import.meta.env['VITE_SUPABASE_URL']&&!!import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'];
-export async function snapshot(company?:string):Promise<Snapshot>{const {data,error}=await db.rpc('app_snapshot',company?{p_company:company}:{});if(error)throw error;return snapshotSchema.parse(data);}
+export async function snapshot(company?:string,query:{search?:string;offerOffset?:number;publicationOffset?:number;auditOffset?:number;offerStatus?:string}={}):Promise<Snapshot>{const {data,error}=await db.rpc('app_snapshot',{...(company?{p_company:company}:{}),p_search:query.search||null,p_offer_offset:query.offerOffset??0,p_publication_offset:query.publicationOffset??0,p_audit_offset:query.auditOffset??0,p_offer_status:query.offerStatus||null});if(error)throw error;return snapshotSchema.parse(data);}
 const jsonValue:z.ZodType<Json>=z.lazy(()=>z.union([z.string(),z.number(),z.boolean(),z.null(),z.array(jsonValue),z.record(jsonValue)]));
 export async function action(name:string,payload:Record<string,unknown>):Promise<Json>{const body=z.record(jsonValue).parse(payload);const {data,error}=await db.rpc('app_action',{p_action:name,p_payload:body});if(error)throw error;return data;}
 export async function upload(company:string,file:Blob){

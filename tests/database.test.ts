@@ -90,3 +90,36 @@ test('agendamento rejeita destino revogado mesmo com marcação legada no banco'
  await db.exec('reset role');await db.query('update groups set is_destination=true where id=$1',[dest]);await user(db,u1);
  await assert.rejects(act('enqueue',{offer_id:offer,version:3,group_ids:[dest],timezone:'UTC',idempotency_key:randomUUID()}),/Destino inválido/);
 });
+test('pesquisa alcança o arquivo e vídeo, áudio e documento prontos podem ser aprovados',async()=>{
+ await user(db,u1);const issued=await act('issue_engine',{label:'Arquivo'});token=issued.token;const connection=issued.connection_id;
+ await db.exec('reset role;set role service_role');
+ await engine('heartbeat',{status:'connected'});
+ await engine('groups',{groups:[{jid:'arquivo@g.us',name:'Arquivo'}]});
+ await user(db,u1);const src=(await rpc(db,'app_snapshot',c1)).groups.find((g:any)=>g.jid==='arquivo@g.us').id;
+ await act('set_groups',{groups:[{id:src,is_source:true,is_destination:false}]});
+ await db.exec('reset role');
+ for(const name of ['clip.mp4','nota.ogg','arquivo.pdf'])await db.query('insert into storage.objects(bucket_id,name) values($1,$2)',['offer-media',`${c1}/${name}`]);
+ await db.exec('set role service_role');
+ const video=await engine('capture',{message_id:'vid-1',group_jid:'arquivo@g.us',received_at:new Date().toISOString(),text:'Vídeo da loja',images:[`${c1}/clip.mp4`],media_kind:'video',media_status:'ready'});
+ const audio=await engine('capture',{message_id:'aud-1',group_jid:'arquivo@g.us',received_at:new Date().toISOString(),text:'Áudio da loja',images:[`${c1}/nota.ogg`],media_kind:'audio',media_status:'ready'});
+ const document=await engine('capture',{message_id:'doc-1',group_jid:'arquivo@g.us',received_at:new Date().toISOString(),text:'PDF da loja',images:[`${c1}/arquivo.pdf`],media_kind:'document',media_status:'ready'});
+ const blocked=await engine('capture',{message_id:'bad-media',group_jid:'arquivo@g.us',received_at:new Date().toISOString(),text:'Tipo desconhecido',images:[],media_kind:'unsupported',media_status:'unsupported'});
+ await user(db,u1);
+ await act('approve_offer',{id:video.id,version:1});
+ await act('approve_offer',{id:audio.id,version:1});
+ await act('approve_offer',{id:document.id,version:1});
+ await assert.rejects(act('approve_offer',{id:blocked.id,version:1}),/Mídia não processada/);
+ await db.exec('reset role');
+ await db.query(`insert into offers(company_id,connection_id,group_id,message_id,received_at,original_text,edited_text,media_kind,media_status)
+  select $1,$2,$3,'old-'||g::text,now()-(g::text||' minutes')::interval,case when g=130 then 'ARQUIVO-UNICO-XYZ' else 'lote' end,'lote','text','ready' from generate_series(1,130) g`,[c1,connection,src]);
+ await user(db,u1);
+ const first=await rpc(db,'app_snapshot',c1,null,0,0,0,null);
+ assert.equal(first.offers.some((o:any)=>String(o.original_text).includes('ARQUIVO-UNICO')),false);
+ assert.ok(first.page.offers.total>100);
+ const found=await rpc(db,'app_snapshot',c1,'ARQUIVO-UNICO-XYZ',0,0,0,null);
+ assert.equal(found.offers.length,1);
+ assert.equal(found.offers[0].original_text,'ARQUIVO-UNICO-XYZ');
+ const later=await rpc(db,'app_snapshot',c1,null,100,0,0,null);
+ assert.ok(later.offers.length>0);
+ assert.ok(later.offers.some((o:any)=>o.original_text==='ARQUIVO-UNICO-XYZ'||o.original_text==='lote'));
+});

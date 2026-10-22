@@ -1,5 +1,6 @@
 import type {Gateway,Job,Transport} from './types.js';
 import type {Vault} from './vault.js';
+import {mimeForPath} from './media.js';
 type Receipt={id:string;lease_token:string;outcome:string;transport_id?:string};
 export function sendFailureReason(error:unknown){
  const msg=error instanceof Error?error.message:'';
@@ -39,7 +40,9 @@ export class Worker {
     await this.api.call('begin_send',{id:job.id,lease_token:job.lease_token});
     let receipt:Receipt;let failure:unknown;
     try{
-      const transport_id=await this.transport.send(job.jid,job.text,image);
+      const mime=job.image?mimeForPath(job.image):undefined;
+      const kind=job.media_kind&&job.media_kind!=='text'?job.media_kind:mime?.startsWith('video/')?'video':mime?.startsWith('audio/')?'audio':mime?.startsWith('application/')?'document':'image';
+      const transport_id=await this.transport.send(job.jid,job.text,image,image?kind:undefined,mime);
       if(!transport_id)throw new Error('Sem confirmação');
       receipt={id:job.id,lease_token:job.lease_token,outcome:'sent',transport_id};
     }catch(error){failure=error;receipt={id:job.id,lease_token:job.lease_token,outcome:'uncertain'};}

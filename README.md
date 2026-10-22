@@ -50,14 +50,14 @@ A integração Baileys está fixada em `7.0.0-rc14`, versão publicada no regist
 - Capturas nunca disparam publicação automática. O controle de envio começa desligado; habilitar permite apenas tarefas aprovadas e criadas explicitamente pelo usuário.
 - Um envio por conexão por vez, intervalo mínimo configurável de 10 a 3.600 segundos; padrão 30 segundos.
 - Atraso superior à tolerância (padrão 5 minutos) retém o agendamento; o usuário deve liberar. Notebook desligado aparece offline após 90 segundos.
-- Texto e uma imagem por mensagem WhatsApp. Álbum do WhatsApp chega como mensagens individuais. Originais preservados; snapshot de publicação usa uma imagem selecionada/final por oferta.
-- Vídeo, áudio e PDF são identificados como não processados; não são baixados nem aprovados como se estivessem prontos.
+- Texto e um arquivo por mensagem WhatsApp: imagem, vídeo MP4, áudio (OGG, MP3 ou M4A) ou documento (PDF, DOC, DOCX, XLS, XLSX), até 10 MB. Álbum do WhatsApp chega como mensagens individuais. Acima de 10 MB ou tipo fora dessa lista, a captura fica explícita como incompleta ou não aceita e não pode ser aprovada. Áudio que também tem texto é publicado como documento para a legenda ir junto.
+- Originais preservados; a publicação usa a imagem final quando houver, senão o arquivo original.
 - OCR no navegador via Tesseract, com download de modelos no primeiro uso. Resultados são sugestões e exigem revisão; seleção manual funciona sem OCR.
 - Preços são inteiros em unidades mínimas e strings no cliente. BRL/USD/EUR: 2 casas; PYG: 0. Sem conversão automática de moeda.
 - Confirmação significa ACK do servidor WhatsApp, não leitura ou recebimento por todos os integrantes.
 - Perda de confirmação depois de iniciado resulta em **incerto**, sem reenvio automático. Revisão manual no histórico não envia mensagens.
 - Planos: Básico 10, Profissional 50, Empresarial configurável. Contam grupos únicos ativos por conexão/JID, seja origem ou destino. Um grupo não pode ocupar as duas funções. Cobrança ainda não integrada.
-- Listagens do painel: 500 ofertas, 1.000 publicações e 200 eventos recentes; totais do dashboard são calculados sobre todos os registros. Paginação e pesquisa em todo o arquivo histórico ficam para evolução.
+- Listagens do painel paginam o arquivo inteiro, 100 registros por página, com busca no servidor. Os totais do dashboard continuam calculados sobre todos os registros.
 - Mensagens recebidas enquanto o motor está completamente desligado não têm recuperação histórica garantida. Capturas já recebidas e gravadas localmente são reenviadas ao backend com deduplicação.
 
 ## Implantação

@@ -49,7 +49,7 @@ O build Docker neste ambiente precisou da CA do proxy via secret temporário Bui
 2. **Sincronização futura:** o repositório para análise contém os fontes completos, mas não foi conectado automaticamente ao editor Lovable. Alterações no GitHub não devem ser consideradas publicadas sem uma implantação confirmada.
 3. **IA externa:** adaptador pronto, sem chave/API paga configurada. Edição manual funciona sem IA.
 4. **Cobrança:** planos atribuídos administrativamente, sem provedor de pagamentos.
-5. **Limites de versão:** uma conexão ativa por empresa; texto e uma imagem por publicação; vídeos/PDF/áudio identificados sem processamento; não há automação por regras de captura; listagens recentes têm limites sem paginação do arquivo inteiro. Windows/macOS têm instaladores e instruções, mas a execução automatizada ocorreu em Linux.
+5. **Limites de versão:** uma conexão ativa por empresa; um arquivo por publicação (imagem, vídeo MP4, áudio ou documento de até 10 MB); acima disso a captura fica incompleta e não aprova; não há automação por regras de captura; o arquivo pagina de 100 em 100 com busca no servidor. Windows/macOS têm instaladores e instruções, mas a execução automatizada ocorreu em Linux.
 
 O novo conector WhatsApp Business do Lovable existe, mas não sincroniza os grupos existentes necessários ao fluxo; por isso o motor Baileys foi mantido. Fontes e limites em [WHATSAPP-LOVABLE.md](WHATSAPP-LOVABLE.md).
 

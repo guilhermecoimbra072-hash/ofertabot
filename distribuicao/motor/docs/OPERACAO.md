@@ -14,7 +14,7 @@ Para vincular novamente após logout: pare o processo, renomeie apenas `.engine-
 
 `node --env-file=.env scripts/health.mjs` retorna código 0 se houve comunicação nos últimos 90s. `.engine-data/health.json` contém somente horário, estado e quantidade de capturas pendentes. Cada conexão, queda (com código), tentativa de reconexão e resultado de envio sai em uma linha, sem QR, token, texto da oferta ou telefone completo. Credencial rejeitada encerra com `credential_rejected`, sem stack. No painel, Histórico contém auditoria de capturas, revisões, aprovações, agendamentos e tentativas/resultados.
 
-Não execute o motor com log de depuração do Baileys em produção; ele está configurado como silencioso. Capturas pendentes no cofre são limitadas a 200 para evitar crescimento indefinido. Se atingir esse limite, o console indica falha; confira o grupo original. O sistema não promete recuperar todas as mensagens ocorridas durante um desligamento prolongado.
+Não execute o motor com log de depuração do Baileys em produção; ele está configurado como silencioso. A caixa quente guarda 200 capturas; o que passar disso vai para um excedente cifrado de até 5.000. Acima desse teto, ou se a preservação falhar, o item vai para quarentena cifrada e o histórico registra o código, sem o conteúdo. O sistema não promete recuperar todas as mensagens ocorridas durante um desligamento prolongado.
 
 ## Backup
 

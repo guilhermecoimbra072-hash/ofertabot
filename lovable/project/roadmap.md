@@ -12,9 +12,9 @@
 - [x] Registrar diferenças e resultados em src/ofertabot/IMPLEMENTACAO.md.
 - [ ] Correspondência literal do painel: conteúdos integrais dos arquivos não estão disponíveis nesta mensagem, somente descrições.
 - [ ] Transporte/mídia com motor real: aguarda motor conectado do usuário.
-- [x] Publicação pública confirmada: https://ofertabot-central.lovable.app; commit informado pelo usuário 2d9c7a5ceee61a701a7c890e885c95a6c1be5b94. Não republicar nesta etapa.
+- [x] Publicação pública confirmada: https://ofertabot-central.lovable.app. A exportação no repositório é o commit `c687b5ae647fec3ac950ade6ab2cb335260edda2` (`EXPORTACAO.json`). O commit anterior `2d9c7a5ceee61a701a7c890e885c95a6c1be5b94` foi a publicação imediatamente anterior à redução da senha mínima para 6.
 - [x] Registrar verificações reais do usuário no site publicado; confirmar URL pela CLI e compilação hospedada sem diagnósticos.
 - [x] Executar novamente testes relevantes do painel: 14/14 aprovados.
-- [ ] Tipagem independente `bunx tsc --noEmit`: execução manual proibida pelas instruções do ambiente; nenhum resultado independente disponível nos checks armazenados.
-- [ ] Site URL e lista hospedada de redirects Auth: não expostos pelas ferramentas de leitura disponíveis; código envia a origem publicada e /?recovery=1, mas a autorização hospedada não foi verificada.
+- [x] Tipagem independente da exportação: `bunx tsc --noEmit` passou fora do ambiente que proibia o comando, conforme `docs/ENTREGA.md` e `docs/PROGRESSO.md`. A pendência antiga deste arquivo estava desatualizada.
+- [ ] Lista hospedada de redirects de Auth: o código envia `/?recovery=1` no domínio publicado. A lista autorizada no provedor de Auth não é legível pelas ferramentas de leitura; conferir em Mais → Usuários → Configurações de autenticação.
 
