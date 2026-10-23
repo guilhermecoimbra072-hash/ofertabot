@@ -15,7 +15,10 @@ dist-ssr
 .tanstack/**
 .nitro
 *.local
-coverage
+coverage/
+test-results/
+playwright-report/
+blob-report/
 *.tsbuildinfo
 .vite
 .eslintcache
@@ -23,6 +26,8 @@ coverage
 .env
 .env.*
 !.env.example
+.env.local
+.env.*.local
 .engine-data/
 .lovable/
 
