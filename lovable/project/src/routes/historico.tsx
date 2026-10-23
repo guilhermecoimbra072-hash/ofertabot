@@ -1,5 +1,5 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-export const Route = createFileRoute("/historico")({
+import {createFileRoute,redirect} from "@tanstack/react-router";
+export const Route=createFileRoute("/historico")({
   head: () => ({
     meta: [
       { title: "Histórico — OfertaBot" },
@@ -10,7 +10,5 @@ export const Route = createFileRoute("/historico")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  beforeLoad: () => {
-    throw redirect({ to: "/", search: { page: "history" }, replace: true });
-  },
+  beforeLoad:()=>{throw redirect({to:"/",search:{page:"history"},replace:true});},
 });

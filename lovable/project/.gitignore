@@ -15,21 +15,6 @@ dist-ssr
 .tanstack/**
 .nitro
 *.local
-coverage/
-test-results/
-playwright-report/
-blob-report/
-*.tsbuildinfo
-.vite
-.eslintcache
-
-.env
-.env.*
-!.env.example
-.env.local
-.env.*.local
-.engine-data/
-.lovable/
 
 # Wrangler / Cloudflare
 .wrangler/
@@ -46,3 +31,10 @@ blob-report/
 *.sln
 *.sw?
 
+# Local test output and env files. Added in the GitHub copy; not part of the Lovable tree.
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.env.local
+.env.*.local

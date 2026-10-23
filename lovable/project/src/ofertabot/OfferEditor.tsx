@@ -1,364 +1,46 @@
-import { useState } from "react";
-import { rewrite, revisions as loadRevisions, errorMessage } from "./api";
-import type { Company, Offer, Snapshot } from "./model";
-import { labels, destinationAvailable, editable } from "./model";
-import { decimalMoney, parseMoney, formatMoney } from "./money";
-import { scheduledUtc } from "./schedule";
-import { ImageEditor, PrivateImage } from "./ImageEditor";
-import { Button } from "./ui";
-type Revision = Awaited<ReturnType<typeof loadRevisions>>[number];
-export function OfferEditor({
-  offer,
-  company,
-  data,
-  mutate,
-  busy,
-  onClose,
-}: {
-  offer: Offer;
-  company: Company;
-  data: Snapshot;
-  mutate: (a: string, p: Record<string, unknown>) => Promise<unknown>;
-  busy: boolean;
-  onClose: () => void;
-}) {
-  const [text, setText] = useState(offer.edited_text),
-    [image, setImage] = useState(offer.edited_image),
-    [uploaded, setUploaded] = useState<string | null>(null),
-    [price, setPrice] = useState(decimalMoney(offer.price_minor, offer.currency)),
-    [currency, setCurrency] = useState(offer.currency),
-    [groups, setGroups] = useState<string[]>([]),
-    [schedule, setSchedule] = useState(""),
-    [zone, setZone] = useState(company.timezone),
-    [error, setError] = useState(""),
-    [suggestion, setSuggestion] = useState(""),
-    [aiBusy, setAiBusy] = useState(false),
-    [revisions, setRevisions] = useState<Revision[]>([]);
-  const canEdit = editable(company),
-    destinations = data.groups.filter((g) => destinationAvailable(g, data.connections));
-  const dirty =
-    !!uploaded ||
-    text !== offer.edited_text ||
-    image !== offer.edited_image ||
-    price !== decimalMoney(offer.price_minor, offer.currency) ||
-    currency !== offer.currency;
-  const run = async (fn: () => Promise<unknown>) => {
-    setError("");
-    try {
-      await fn();
-    } catch (e) {
-      setError(errorMessage(e));
-    }
-  };
-  return (
-    <>
-      <div className="page-top">
-        <div>
-          <Button className="link" onClick={onClose}>
-            ← Voltar às ofertas
-          </Button>
-          <h1>Revisar oferta</h1>
-          <p className="muted">
-            Versão {offer.version} ·{" "}
-            <span className={"badge " + offer.status}>{labels[offer.status]}</span> ·{" "}
-            {formatMoney(offer.price_minor, offer.currency)}
-          </p>
-        </div>
-      </div>
-      {error && (
-        <div className="error" role="alert">
-          {error}
-        </div>
-      )}
-      <div className="editor-grid">
-        <section className="card">
-          <span className="eyebrow">CONTEÚDO PRESERVADO</span>
-          <h3>Original do fornecedor</h3>
-          <p className="original-text">{offer.original_text || "Mensagem sem texto."}</p>
-          {offer.original_images.map((p) => (
-            <PrivateImage key={p} path={p} />
-          ))}
-          <p className="fine">
-            Origem: {data.groups.find((g) => g.id === offer.group_id)?.name ?? offer.group_id}
-            <br />
-            Mensagem: {offer.message_id}
-            <br />
-            {new Date(offer.received_at).toLocaleString("pt-BR")}
-          </p>
-          {offer.media_status !== "ready" && (
-            <p className="notice">
-              Mídia {offer.media_kind}:{" "}
-              {offer.media_status === "failed"
-                ? "captura incompleta"
-                : "processamento ainda não implementado"}
-              . Não está pronta para aprovação.
-            </p>
-          )}
-        </section>
-        <section className="card">
-          <span className="eyebrow">A SUA VERSÃO</span>
-          <h3>Texto da publicação</h3>
-          <label>
-            Mensagem
-            <textarea
-              rows={10}
-              maxLength={4000}
-              disabled={!canEdit || busy}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-            />
-          </label>
-          <small className="muted">{text.length}/4000 caracteres</small>
-          <div className="form-grid">
-            <label>
-              Preço
-              <input
-                inputMode="decimal"
-                value={price}
-                disabled={!canEdit || busy}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="129,90"
-              />
-            </label>
-            <label>
-              Moeda
-              <select
-                value={currency}
-                disabled={!canEdit || busy}
-                onChange={(e) => setCurrency(e.target.value)}
-              >
-                {["BRL", "USD", "PYG", "EUR"].map((c) => (
-                  <option key={c}>{c}</option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <label>
-            Inserir modelo
-            <select
-              defaultValue=""
-              disabled={!canEdit || busy}
-              onChange={(e) => {
-                const t = data.templates.find((t) => t.id === e.target.value);
-                if (t) setText((s) => (s + "\n" + t.body).slice(0, 4000));
-                e.target.value = "";
-              }}
-            >
-              <option value="">Escolha um modelo</option>
-              {data.templates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="actions">
-            <Button
-              className="secondary"
-              disabled={!canEdit || busy}
-              onClick={() =>
-                setText((s) =>
-                  [s, company.brand["phone"], company.brand["instagram"], company.brand["cta"]]
-                    .filter(Boolean)
-                    .join("\n")
-                    .slice(0, 4000),
-                )
-              }
-            >
-              Inserir contatos e CTA
-            </Button>
-            <Button
-              className="secondary"
-              disabled={!canEdit || aiBusy || dirty || busy}
-              onClick={() =>
-                void run(async () => {
-                  setAiBusy(true);
-                  try {
-                    setSuggestion((await rewrite(company.id, offer.id)).text);
-                  } finally {
-                    setAiBusy(false);
-                  }
-                })
-              }
-            >
-              {aiBusy ? "Reescrevendo…" : "Sugerir com IA"}
-            </Button>
-          </div>
-          {suggestion && (
-            <div className="notice">
-              <strong>Revise antes de usar</strong>
-              <p className="original-text">{suggestion}</p>
-              <Button
-                onClick={() => {
-                  setText(suggestion);
-                  setSuggestion("");
-                }}
-              >
-                Usar sugestão no rascunho
-              </Button>
-            </div>
-          )}
-          <div className="actions">
-            <Button
-              disabled={busy || !canEdit || !dirty}
-              onClick={() =>
-                void run(() =>
-                  mutate("save_offer", {
-                    id: offer.id,
-                    version: offer.version,
-                    edited_text: text,
-                    edited_image: image,
-                    uploaded_original: uploaded,
-                    price_minor: parseMoney(price, currency),
-                    currency,
-                  }),
-                )
-              }
-            >
-              Salvar alterações
-            </Button>
-            <Button
-              className="secondary"
-              disabled={
-                busy ||
-                !canEdit ||
-                dirty ||
-                offer.media_status !== "ready" ||
-                !["text", "image"].includes(offer.media_kind)
-              }
-              onClick={() =>
-                void run(() => mutate("approve_offer", { id: offer.id, version: offer.version }))
-              }
-            >
-              Aprovar versão {offer.version}
-            </Button>
-            <Button
-              className="danger"
-              disabled={busy || !canEdit || dirty}
-              onClick={() =>
-                void run(() => mutate("reject_offer", { id: offer.id, version: offer.version }))
-              }
-            >
-              Rejeitar
-            </Button>
-          </div>
-          <p className="fine">
-            Alterações salvas exigem nova aprovação. Publicações já criadas preservam a versão
-            escolhida.
-          </p>
-        </section>
-      </div>
-      {canEdit && (
-        <ImageEditor
-          company={company}
-          path={uploaded ?? offer.original_images[0] ?? image ?? null}
-          onSave={setImage}
-          onOriginal={(p) => {
-            setUploaded(p);
-            setImage(p);
-          }}
-        />
-      )}
-      <section className="card">
-        <h3>Publicar esta versão</h3>
-        <p className="muted">
-          Cada destino terá seu próprio resultado. Enviada significa confirmação do servidor
-          WhatsApp, não leitura pelos participantes.
-        </p>
-        <div className="group-options">
-          {destinations.map((g) => (
-            <label className="check" key={g.id}>
-              <input
-                type="checkbox"
-                disabled={!canEdit || busy}
-                checked={groups.includes(g.id)}
-                onChange={(e) =>
-                  setGroups((s) =>
-                    e.target.checked ? [...s, g.id] : s.filter((id) => id !== g.id),
-                  )
-                }
-              />
-              {g.name}
-            </label>
-          ))}
-          {!destinations.length && (
-            <p className="notice">Selecione um grupo de destino na tela Grupos.</p>
-          )}
-        </div>
-        <div className="form-grid">
-          <label>
-            Agendar (vazio = agora)
-            <input
-              type="datetime-local"
-              disabled={!canEdit || busy}
-              value={schedule}
-              onChange={(e) => setSchedule(e.target.value)}
-            />
-          </label>
-          <label>
-            Fuso horário
-            <input
-              disabled={!canEdit || busy}
-              value={zone}
-              onChange={(e) => setZone(e.target.value)}
-              list="timezones"
-            />
-          </label>
-        </div>
-        <Button
-          disabled={
-            busy ||
-            !canEdit ||
-            !company.settings.send_enabled ||
-            offer.status !== "approved" ||
-            dirty ||
-            !groups.length ||
-            groups.length > 100
-          }
-          onClick={() =>
-            void run(async () => {
-              const at = scheduledUtc(schedule, zone);
-              await mutate("enqueue", {
-                offer_id: offer.id,
-                version: offer.version,
-                group_ids: groups,
-                scheduled_at: at,
-                timezone: zone,
-                idempotency_key: crypto.randomUUID(),
-              });
-              onClose();
-            })
-          }
-        >
-          {schedule ? "Agendar publicação" : "Publicar agora"}
-        </Button>
-        {!company.settings.send_enabled && (
-          <p className="notice">Envios desabilitados nas configurações do motor.</p>
-        )}
-        <p className="fine">
-          Se o motor ficar offline, atrasos acima da tolerância exigem liberação manual.
-        </p>
-      </section>
-      <section className="card">
-        <h3>Histórico de versões</h3>
-        <Button
-          className="secondary"
-          onClick={() =>
-            void run(async () => setRevisions(await loadRevisions(company.id, offer.id)))
-          }
-        >
-          Carregar versões preservadas
-        </Button>
-        {revisions.map((r) => (
-          <details key={r.version}>
-            <summary>
-              Versão {r.version} · {new Date(r.created_at).toLocaleString("pt-BR")}
-            </summary>
-            <p className="original-text">{r.content.edited_text}</p>
-            <p className="fine">Responsável: {r.actor_id ?? "Motor"}</p>
-          </details>
-        ))}
-      </section>
-    </>
-  );
+import {useEffect,useRef,useState} from 'react';
+import {rewrite,revisions as loadRevisions,upload,errorMessage} from './api';
+import type {Company,Offer,Snapshot} from './model';
+import {labels,destinationAvailable,editable} from './model';
+import {decimalMoney,parseMoney,formatMoney,displayMoney} from './money';
+import {scheduledUtc} from './schedule';
+import {ImageEditor,type ImageGenerator} from './ImageEditor';
+import {applyPriceToText} from './imagegen';
+import {Button} from './ui';
+import {PrivateMedia,mediaType,APPROVABLE_KINDS} from './Media';
+type Revision=Awaited<ReturnType<typeof loadRevisions>>[number];
+export function OfferEditor({offer,company,data,mutate,busy,onClose}:{offer:Offer;company:Company;data:Snapshot;mutate:(a:string,p:Record<string,unknown>)=>Promise<unknown>;busy:boolean;onClose:()=>void}){
+ const [text,setText]=useState(offer.edited_text),[image,setImage]=useState(offer.edited_image),[uploaded,setUploaded]=useState<string|null>(null),[price,setPrice]=useState(decimalMoney(offer.price_minor,offer.currency)),[currency,setCurrency]=useState(offer.currency),[groups,setGroups]=useState<string[]>([]),[schedule,setSchedule]=useState(''),[zone,setZone]=useState(company.timezone),[error,setError]=useState(''),[aiNotice,setAiNotice]=useState(''),[aiError,setAiError]=useState(''),[revisions,setRevisions]=useState<Revision[]>([]),[enhancedDirty,setEnhancedDirty]=useState(false);
+ const imageGen=useRef<ImageGenerator>(null),lastPrice=useRef(offer.price_minor?displayMoney(offer.price_minor,offer.currency):''),aiUsed=useRef(false);
+ // Reescrita automática, uma única vez por oferta: texto ainda não editado e com preço conhecido.
+ const autoRewrite=async(display:string)=>{if(aiUsed.current||offer.edited_text!==offer.original_text)return;aiUsed.current=true;try{const r=await rewrite(company.id,offer.id,display);setText(r.text.slice(0,4000));setAiNotice('Texto gerado automaticamente');setAiError('');}catch(e){setAiError(errorMessage(e));}};
+ useEffect(()=>{if(offer.price_minor)void autoRewrite(displayMoney(offer.price_minor,offer.currency));// eslint-disable-next-line react-hooks/exhaustive-deps
+ },[]);
+ useEffect(()=>{if(aiUsed.current||offer.price_minor)return;const t=setTimeout(()=>{try{const minor=parseMoney(price,currency);if(minor!==null)void autoRewrite(displayMoney(minor,currency));}catch{/* preço ainda inválido */}},800);return()=>clearTimeout(t);// eslint-disable-next-line react-hooks/exhaustive-deps
+ },[price,currency]);
+ const [labelText,setLabelText]=useState(''),[saving,setSaving]=useState(false),[waitingImage,setWaitingImage]=useState(false);
+ const savingRef=useRef(false);
+ const formBusy=busy||saving;
+ const canEdit=editable(company),destinations=data.groups.filter(g=>destinationAvailable(g,data.connections));
+ const priceDirty=price!==decimalMoney(offer.price_minor,offer.currency)||currency!==offer.currency;
+ const dirty=!!uploaded||text!==offer.edited_text||image!==offer.edited_image||priceDirty||enhancedDirty;
+ const firstImage=offer.original_images.find(p=>mediaType(p)==='image');
+ const imagePath=uploaded??firstImage??image??null;
+ const run=async(fn:()=>Promise<unknown>)=>{setError('');try{await fn();}catch(e){setError(errorMessage(e));}};
+ useEffect(()=>{const t=setTimeout(()=>{let formatted='';try{const minor=parseMoney(price,currency);if(minor!==null)formatted=displayMoney(minor,currency);}catch{formatted='';}setLabelText(formatted);},400);return()=>clearTimeout(t);},[price,currency]);
+ useEffect(()=>{if(!labelText||labelText===lastPrice.current)return;const prev=lastPrice.current;lastPrice.current=labelText;setText(s=>applyPriceToText(s,prev,labelText).slice(0,4000));},[labelText]);
+ return <><div className="page-top"><div><Button className="link" onClick={onClose}>← Voltar às ofertas</Button><h1>Revisar oferta</h1><p className="muted">Versão {offer.version} · <span className={'badge '+offer.status}>{labels[offer.status]}</span> · {formatMoney(offer.price_minor,offer.currency)}</p></div></div>
+ {error&&<div className="error" role="alert">{error}</div>}
+ <div className="editor-grid"><section className="card"><span className="eyebrow">CONTEÚDO PRESERVADO</span><h3>Original do fornecedor</h3><p className="original-text">{offer.original_text||'Mensagem sem texto.'}</p>{offer.original_images.map(p=><PrivateMedia key={p} path={p}/>)}<p className="fine">Origem: {data.groups.find(g=>g.id===offer.group_id)?.name??offer.group_id}<br/>Mensagem: {offer.message_id}<br/>{new Date(offer.received_at).toLocaleString('pt-BR')}</p>{offer.media_status!=='ready'&&<p className="notice">Mídia {offer.media_kind}: {offer.media_status==='failed'?'captura incompleta':'processamento ainda não implementado'}. Não está pronta para aprovação.</p>}</section>
+ <section className="card"><span className="eyebrow">A SUA VERSÃO</span><h3>Texto da publicação</h3><label>Mensagem<textarea rows={10} maxLength={4000} disabled={!canEdit||formBusy} value={text} onChange={e=>setText(e.target.value)}/></label><small className="muted">{text.length}/4000 caracteres</small>
+ <div className="form-grid"><label>Preço<input inputMode="decimal" value={price} disabled={!canEdit||formBusy} onChange={e=>setPrice(e.target.value)} placeholder="129,90"/></label><label>Moeda<select value={currency} disabled={!canEdit||formBusy} onChange={e=>setCurrency(e.target.value)}>{Object.entries({BRL:'R$ (Real)',USD:'US$ (Dólar)',PYG:'₲ (Guarani)',EUR:'€ (Euro)'}).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label></div>
+ {aiNotice&&<p className="muted" role="status">{aiNotice} — revise antes de salvar.</p>}
+ {aiError&&<p className="muted" role="alert">Reescrita automática indisponível: {aiError} Você pode editar e salvar normalmente.</p>}
+ <div className="actions"><Button disabled={formBusy||!canEdit||!dirty} onClick={()=>void run(async()=>{if(savingRef.current)return;savingRef.current=true;setSaving(true);try{const minor=parseMoney(price,currency),display=displayMoney(minor,currency);let finalImage=image,enhanced=false;if(imagePath){setWaitingImage(true);try{enhanced=await imageGen.current?.waitForEnhancement()??false;}finally{setWaitingImage(false);}if(priceDirty||uploaded||enhancedDirty||enhanced){const blob=await imageGen.current?.generate(display);if(blob)finalImage=await upload(company.id,blob);}}await mutate('save_offer',{id:offer.id,version:offer.version,edited_text:display?applyPriceToText(text,lastPrice.current,display).slice(0,4000):text,edited_image:finalImage,uploaded_original:uploaded,price_minor:minor,currency});setImage(finalImage);setEnhancedDirty(false);}finally{savingRef.current=false;setSaving(false);}})}>{waitingImage?'Gerando imagem…':saving?'Salvando…':'Salvar alterações'}</Button><Button className="secondary" disabled={formBusy||!canEdit||dirty||offer.media_status!=='ready'||!APPROVABLE_KINDS.includes(offer.media_kind)} onClick={()=>void run(()=>mutate('approve_offer',{id:offer.id,version:offer.version}))}>Aprovar versão {offer.version}</Button><Button className="danger" disabled={formBusy||!canEdit||dirty} onClick={()=>void run(()=>mutate('reject_offer',{id:offer.id,version:offer.version}))}>Rejeitar</Button></div>{waitingImage&&<p className="muted" role="status">Gerando imagem…</p>}<p className="fine">Alterações salvas exigem nova aprovação. Publicações já criadas preservam a versão escolhida.</p></section></div>
+ {canEdit&&<ImageEditor disabled={formBusy} ref={imageGen} company={company} offerId={offer.id} path={imagePath} priceText={labelText} onOriginal={p=>setUploaded(p)} onEnhanced={()=>setEnhancedDirty(true)}/>}
+ <section className="card"><h3>Publicar esta versão</h3><p className="muted">Cada destino terá seu próprio resultado. Enviada significa confirmação do servidor WhatsApp, não leitura pelos participantes.</p>
+ <div className="group-options">{destinations.map(g=><label className="check" key={g.id}><input type="checkbox" disabled={!canEdit||formBusy} checked={groups.includes(g.id)} onChange={e=>setGroups(s=>e.target.checked?[...s,g.id]:s.filter(id=>id!==g.id))}/>{g.name}</label>)}{!destinations.length&&<p className="notice">Selecione um grupo de destino na tela Grupos.</p>}</div>
+ <div className="form-grid"><label>Agendar (vazio = agora)<input type="datetime-local" disabled={!canEdit||formBusy} value={schedule} onChange={e=>setSchedule(e.target.value)}/></label><label>Fuso horário<input disabled={!canEdit||formBusy} value={zone} onChange={e=>setZone(e.target.value)} list="timezones"/></label></div>
+ <Button disabled={busy||!canEdit||!company.settings.send_enabled||offer.status!=='approved'||dirty||!groups.length||groups.length>100} onClick={()=>void run(async()=>{const at=scheduledUtc(schedule,zone);await mutate('enqueue',{offer_id:offer.id,version:offer.version,group_ids:groups,scheduled_at:at,timezone:zone,idempotency_key:crypto.randomUUID()});onClose();})}>{schedule?'Agendar publicação':'Publicar agora'}</Button>{!company.settings.send_enabled&&<p className="notice">Envios desabilitados nas configurações do motor.</p>}<p className="fine">Se o motor ficar offline, atrasos acima da tolerância exigem liberação manual.</p></section>
+ <section className="card"><h3>Histórico de versões</h3><Button className="secondary" onClick={()=>void run(async()=>setRevisions(await loadRevisions(company.id,offer.id)))}>Carregar versões preservadas</Button>{revisions.map(r=><details key={r.version}><summary>Versão {r.version} · {new Date(r.created_at).toLocaleString('pt-BR')}</summary><p className="original-text">{r.content.edited_text}</p><p className="fine">Responsável: {r.actor_id??'Motor'}</p></details>)}</section></>;
 }

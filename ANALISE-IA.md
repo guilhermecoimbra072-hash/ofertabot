@@ -6,7 +6,7 @@ Este repositório reúne o código entregue para revisão. O painel publicado es
 
 | Caminho | Papel |
 | --- | --- |
-| `lovable/project/` | Exportação do projeto TanStack Start/React realmente hospedado no Lovable. Examine esta pasta para revisar o site publicado. `EXPORTACAO.json` registra o commit de origem. |
+| `lovable/project/` | Snapshot manual do painel TanStack Start/React publicado no Lovable, commit `158ce5541b48f56a31483e36b09aee09eeb8cb39`. Não é sincronização automática. Examine esta pasta para revisar o site publicado. `EXPORTACAO.json` registra o commit de origem. |
 | `lovable/project/src/ofertabot/` | Painel publicado: autenticação, ofertas, Canvas/OCR, grupos, fila, marca, equipe e configurações. |
 | `lovable/project/src/server/` e `src/routes/api/public/` dentro dessa pasta | Handlers hospedados do motor e da IA; cliente administrativo apenas no servidor. |
 | `lovable/project/supabase/schema.sql` e `drizzle/migrations/` | Contrato SQL Cloud e migrações efetivamente aplicadas pela plataforma. |
@@ -53,7 +53,7 @@ O build TanStack usa `bun run build`; variáveis públicas fictícias bastam par
 ## Estado de verificação e pontos de revisão
 
 - Raiz: `npm test` tem 39 testes e passou sem credencial de WhatsApp. A interface Playwright continua com 6 testes em `tests/ui`; o OCR só roda com `OFERTABOT_TEST_OCR=1`. Concorrência com PostgreSQL real segue em `npm run test:postgres` e pede Docker.
-- Exportação Lovable: instalação com lock congelado, tipagem, lint e build passaram; a suíte Vitest tem 43 testes, incluindo os 3 de mínimo de senha. A senha mínima solicitada pelo usuário é 6 caracteres; senhas maiores continuam aceitas.
+- Exportação Lovable: a pasta no GitHub é um snapshot manual do commit `158ce5541b48f56a31483e36b09aee09eeb8cb39`, não uma sincronização automática. A suíte Vitest tem 178 testes em 13 arquivos, incluindo os 3 de mínimo de senha. A senha mínima solicitada pelo usuário é 6 caracteres; senhas maiores continuam aceitas.
 - Site publicado: login inexistente rejeitado, APIs sem credenciais bloqueadas, layouts desktop/mobile/iPad conferidos. Telas autenticadas nos testes usam interceptação de respostas; não confundir com sessão positiva de produção.
 - Ainda sem teste real: confirmação/recuperação por e-mail, upload autenticado e fluxo completo de WhatsApp. Não afirmar envio real ou entrega exatamente uma vez.
 - Revisar especialmente: RLS por empresa; credencial revogável e revalidação após locks; caminhos de mídia; deduplicação; captura de mensagens próprias/ciclos; versões aprovadas imutáveis; concorrência de claim; distinção entre falha recuperável e resultado incerto; retenção de horários vencidos.

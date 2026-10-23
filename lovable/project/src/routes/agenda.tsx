@@ -1,5 +1,5 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-export const Route = createFileRoute("/agenda")({
+import {createFileRoute,redirect} from "@tanstack/react-router";
+export const Route=createFileRoute("/agenda")({
   head: () => ({
     meta: [
       { title: "Agenda — OfertaBot" },
@@ -10,7 +10,5 @@ export const Route = createFileRoute("/agenda")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  beforeLoad: () => {
-    throw redirect({ to: "/", search: { page: "schedule" }, replace: true });
-  },
+  beforeLoad:()=>{throw redirect({to:"/",search:{page:"schedule"},replace:true});},
 });

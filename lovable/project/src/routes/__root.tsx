@@ -81,13 +81,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "OfertaBot" },
-      {
-        name: "description",
-        content: "Painel para revisar, aprovar e republicar ofertas do WhatsApp.",
-      },
+      { name: "description", content: "Painel para revisar, aprovar e republicar ofertas do WhatsApp." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-    ],
+          ],
     links: [
       {
         rel: "stylesheet",
@@ -96,10 +93,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: ofertaCss },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap",
-      },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700;800&display=swap" },
     ],
   }),
   shellComponent: RootShell,
@@ -129,7 +123,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
-      <Toaster theme="light" richColors position="bottom-right" />
+      <Toaster theme="dark" richColors position="bottom-right" />
     </QueryClientProvider>
   );
 }
