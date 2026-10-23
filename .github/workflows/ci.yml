@@ -54,7 +54,7 @@ jobs:
       - name: Lint
         # A exportação fica como o Lovable a gravou, inclusive a dívida do Prettier.
         # O ESLint roda; só a regra prettier/prettier fica desligada.
-        run: bunx eslint . --rule 'prettier/prettier: off'
+        run: "bunx eslint . --rule 'prettier/prettier: off'"
       - name: Testes
         run: bunx vitest run
       - name: Build
