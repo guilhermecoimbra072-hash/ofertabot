@@ -1,5 +1,5 @@
-import {createFileRoute,redirect} from "@tanstack/react-router";
-export const Route=createFileRoute("/ofertas")({
+import { createFileRoute, redirect } from "@tanstack/react-router";
+export const Route = createFileRoute("/ofertas")({
   head: () => ({
     meta: [
       { title: "Ofertas — OfertaBot" },
@@ -10,6 +10,7 @@ export const Route=createFileRoute("/ofertas")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  beforeLoad:()=>{throw redirect({to:"/",search:{page:"offers"},replace:true});},
+  beforeLoad: () => {
+    throw redirect({ to: "/", search: { page: "offers" }, replace: true });
+  },
 });
-

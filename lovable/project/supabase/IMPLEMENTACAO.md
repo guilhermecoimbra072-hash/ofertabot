@@ -15,7 +15,7 @@
 
 ### Resultados desta revisão
 
-- **27 testes passaram**: 19 regras PGlite, 6 handlers, 1 migração preservando empresa existente e comparando corpos finais de funções, 1 navegação. Arquivos: `src/test/backend-rules.test.ts`, `src/test/server-handlers.test.ts`, `src/test/backend-migration.test.ts`, `src/test/app-routing.test.tsx`.
+- **27 testes de backend passaram** nesta revisão: 19 regras PGlite, 6 handlers, 1 migração preservando empresa existente e comparando corpos finais de funções, 1 navegação. Arquivos: `src/test/backend-rules.test.ts`, `src/test/server-handlers.test.ts`, `src/test/backend-migration.test.ts`, `src/test/app-routing.test.tsx`. A suíte Vitest completa do projeto, com regras de painel e mínimo de senha, tem 43 testes.
 - A revalidação após lock foi exercitada por injeção de falha isolada na segunda validação: a ação é rejeitada com `42501` e não altera o estado. Isso não substitui um teste simultâneo contra PostgreSQL hospedado.
 - Banco hospedado confirmou as quatro alterações finais; 11 tabelas continuam com RLS. `anon` não executa snapshot; usuário autenticado não executa engine, não atribui plano e não insere ofertas diretamente; administrador do servidor executa engine.
 - Storage conserva somente SELECT/INSERT autorizados ao cliente, bucket privado, 10.485.760 bytes e PNG/JPEG/WebP; nenhum UPDATE/DELETE de mídia concedido por policy.
@@ -59,7 +59,7 @@ O painel continua abrindo como `Dashboard — OfertaBot`, sem alteração de apr
 
 ## Testes
 
-13 testes aprovados: 12 de PostgreSQL PGlite isolado e 1 de navegação existente. O SQL dos testes é o mesmo `supabase/schema.sql` aplicado, com schemas `auth`/`storage` simulados apenas no processo de teste.
+Nesta aplicação anterior, 13 testes aprovados: 12 de PostgreSQL PGlite isolado e 1 de navegação existente. A contagem vigente da suíte está na revisão final, acima. O SQL dos testes é o mesmo `supabase/schema.sql` aplicado, com schemas `auth`/`storage` simulados apenas no processo de teste.
 
 Cobertura: RLS, autorização de viewer, precisão de bigint e rejeição de preço negativo, deduplicação de captura, fila e exclusividade de processamento, leases de 90/120 segundos, incerteza após início de envio, planos 10/50 e atribuição restrita, revogação, limpeza ao excluir conta, limite de 30 reescritas/hora e conflito de versão.
 

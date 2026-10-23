@@ -9,7 +9,7 @@
 - Login por e-mail habilitado no Lovable Cloud após o teste identificar que estava desativado. Confirmação de e-mail não foi desativada.
 
 ## Verificações
-- 40 testes aprovados: 27 regressões existentes e 13 testes de dinheiro, fuso/DST, offline, revogação e URL do motor.
+- 43 testes Vitest aprovados: 19 regras PGlite, 6 handlers, 1 migração, 1 navegação, 13 testes de dinheiro, fuso/DST, offline, revogação e URL do motor, e 3 de mínimo de senha.
 - Compilação hospedada confirmada em 22/10/2026: execução `br_440b17d0-c4c8-4a88-bee1-2684a3d64a21`, commit `2d9c7a5ceee61a701a7c890e885c95a6c1be5b94`, status `succeeded`, sem diagnósticos ou alvos com falha. Isso não comprova uma verificação TypeScript separada.
 - Navegador real em desktop 1280×1800 e celular 390×844: login, cadastro/recuperação sem envio, redirecionamentos, dez telas, imagem privada, Canvas, salvamento, versões, aprovação, IA indisponível, retenção, cancelamento, resultado incerto e configurações.
 - OCR real no navegador identificou `R$ 129,90` com confiança de 94% na imagem isolada de teste.

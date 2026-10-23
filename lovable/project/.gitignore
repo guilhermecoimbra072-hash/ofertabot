@@ -15,6 +15,16 @@ dist-ssr
 .tanstack/**
 .nitro
 *.local
+coverage
+*.tsbuildinfo
+.vite
+.eslintcache
+
+.env
+.env.*
+!.env.example
+.engine-data/
+.lovable/
 
 # Wrangler / Cloudflare
 .wrangler/

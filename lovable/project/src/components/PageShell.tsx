@@ -8,7 +8,13 @@ interface PageShellProps {
   emptyText: string;
 }
 
-export function PageShell({ title, description, icon: Icon, emptyTitle, emptyText }: PageShellProps) {
+export function PageShell({
+  title,
+  description,
+  icon: Icon,
+  emptyTitle,
+  emptyText,
+}: PageShellProps) {
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
@@ -25,4 +31,3 @@ export function PageShell({ title, description, icon: Icon, emptyTitle, emptyTex
     </div>
   );
 }
-

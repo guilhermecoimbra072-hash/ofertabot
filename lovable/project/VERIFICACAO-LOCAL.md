@@ -6,7 +6,7 @@ Após exportar, neste ambiente Linux/Node 24.19.0, foram executados:
 
 - Instalação Bun 1.4.3 com lockfile congelado: sucesso.
 - TypeScript 5.9.3, `tsc --noEmit`: sucesso.
-- Vitest 4.1.11: 5 arquivos, 40 testes aprovados.
+- Vitest 4.1.11: 6 arquivos, 43 testes aprovados, incluindo os 3 de mínimo de senha.
 - Vite 8.1.5, cliente + SSR + Nitro: compilação concluída. Usou URL/chave públicas fictícias apenas para compilar, sem acesso ao backend.
 
 Isso resolve localmente a pendência de tipagem descrita no relatório remoto. O site https://ofertabot-central.lovable.app também foi testado em Chromium desktop/mobile e rejeitou login inexistente e chamadas sem credenciais. Login positivo, confirmação de e-mail, recuperação, storage autenticado e WhatsApp real ainda aguardam teste do usuário. A lista hospedada de redirects Auth não foi acessível.

@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Nenhum segredo e nenhum WhatsApp. Os roteiros opcionais ficam de fora:
+# test:postgres e test:local pedem Docker; test:ui pede Chromium e o OCR
+# só baixa modelos com OFERTABOT_TEST_OCR=1.
+jobs:
+  engine:
+    name: Motor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.19.0
+          cache: npm
+      - name: Instalação limpa
+        run: npm ci
+      - name: Tipagem
+        run: npm run typecheck
+      - name: Build
+        run: npm run build
+      - name: Testes
+        run: npm test
+
+  panel:
+    name: Painel Lovable
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lovable/project
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.19.0
+      # A exportação do painel trava dependências em bun.lock, não em package-lock.json.
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - name: Instalação limpa
+        working-directory: lovable/project
+        run: bun install --frozen-lockfile
+      - name: Tipagem
+        run: bun run typecheck
+      - name: Lint
+        run: bun run lint
+      - name: Testes
+        run: bun run test
+      - name: Build
+        run: bun run build
+        env:
+          VITE_SUPABASE_URL: http://127.0.0.1:54321
+          VITE_SUPABASE_PUBLISHABLE_KEY: test-public-key

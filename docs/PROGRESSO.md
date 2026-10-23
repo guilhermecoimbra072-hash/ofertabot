@@ -1,6 +1,6 @@
 # Registro de execução
 
-Ambiente local inicialmente vazio. Nenhum AGENTS.md encontrado. Lovable conta guilhermecoimbra073@gmail.com, workspace 4ca5229743ac358dc51e; busca e listagem completas não encontraram OfertaBot. GitHub: duas contas acessíveis, nenhuma com repositório OfertaBot identificado. CLI GitHub sem token válido. Repositório Projeto-WhatsApp-com-ia- tem README apenas com o nome; identidade insuficiente, preservado.
+Ambiente local inicialmente vazio. Nenhum AGENTS.md encontrado. Lovable conta do proprietário, workspace 4ca5229743ac358dc51e; busca e listagem completas não encontraram OfertaBot. GitHub: duas contas acessíveis, nenhuma com repositório OfertaBot identificado. CLI GitHub sem token válido. Repositório Projeto-WhatsApp-com-ia- tem README apenas com o nome; identidade insuficiente, preservado.
 
 Tentativa inicial Lovable interrompida sem confirmação. Segunda tentativa rejeitada após mudança de catálogo de ferramentas. Nova consulta em andamento. Nenhuma publicação alegada.
 

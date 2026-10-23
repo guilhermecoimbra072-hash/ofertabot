@@ -98,3 +98,5 @@ Não execute duas instâncias para a mesma credencial. Para migrar de notebook p
 ## Código para desenvolvimento
 
 `ofertabot-entrega.zip` inclui painel React/Vite portável, motor, regras SQL, testes, Docker e documentação. `ofertabot-lovable.zip` é uma exportação separada do projeto TanStack no Lovable, com seu lockfile Bun; as adaptações da plataforma não são uma cópia literal do painel Vite. Use o site publicado no primeiro teste. O frontend local exige variáveis públicas do mesmo backend, conforme `docs/IMPLANTACAO.md`. Nunca aplique ambas as migrações iniciais sobre o banco existente.
+
+Os testes automáticos não usam WhatsApp nem segredos. Na raiz do repositório, `npm test` executa 39 casos (regras, transporte simulado, reconexão e instalação). Em `lovable/project`, o Vitest executa 43 casos. `npm run test:ui`, `npm run test:postgres` e `npm run test:local` continuam opcionais: pedem navegador ou Docker, e o OCR só baixa modelos com `OFERTABOT_TEST_OCR=1`.

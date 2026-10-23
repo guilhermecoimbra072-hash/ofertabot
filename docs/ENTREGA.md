@@ -26,11 +26,11 @@ O painel TanStack publicado foi adaptado pelo Lovable a partir do contrato e fun
 | --- | --- |
 | Instalação local | `npm ci`, tipagem e build de painel/motor concluídos; auditoria sem vulnerabilidades reportadas |
 | Motor independente | Lockfile próprio, instalação limpa, compilação e importação Baileys executadas; auditoria de produção: zero |
-| Regras e motor locais | 22 testes passaram: autorização, isolamento, deduplicação, aprovação/versionamento, agenda, revogação, recuperação, resultados incertos, quarentena, dinheiro e restrição de conta |
-| Variante SQL Cloud | 10 testes passaram em PGlite |
+| Regras e motor locais | `npm test` tem 39 testes e passou sem WhatsApp nem segredo: autorização, isolamento, deduplicação, aprovação/versionamento, agenda, revogação, recuperação, resultados incertos, quarentena, dinheiro, restrição de conta, reconexão e instalação |
+| Variante SQL Cloud | 19 regras PGlite em `lovable/project/src/test/backend-rules.test.ts`, dentro dos 43 testes Vitest do painel |
 | Concorrência real | PostgreSQL 17.6 em Docker, duas sessões: claim exclusivo e revogação durante heartbeat bloqueado; 2 cenários passaram |
 | Interface local | 6 testes Chromium: desktop/mobile, edição, aprovação/fila simulada, upload/final e OCR real sobre imagem sintética |
-| Lovable | Migrações aplicadas, 11 tabelas RLS e bucket privado verificados. Na cópia exportada: instalação com Bun e lock congelado, `tsc --noEmit`, 40 testes e build TanStack/Nitro passaram |
+| Lovable | Migrações aplicadas, 11 tabelas RLS e bucket privado verificados. Na cópia exportada: instalação com Bun e lock congelado, `tsc --noEmit`, lint, 43 testes Vitest e build TanStack/Nitro passaram |
 | Site publicado | Login inexistente rejeitado pelo Auth real (400); engine GET 405, sem credencial 401, token inexistente 403; IA sem JWT 401 |
 | Navegador publicado | Login desktop 1440×1000 e celular 390×844, sem erros JavaScript ou overflow; capturas inspecionadas visualmente |
 | Docker do motor | Imagem construída e execução sem root/rede testada; Baileys/cofre e restrição de conta verificados |

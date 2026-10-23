@@ -52,8 +52,8 @@ O build TanStack usa `bun run build`; variáveis públicas fictícias bastam par
 
 ## Estado de verificação e pontos de revisão
 
-- Raiz: 22 testes de regras/motor passaram; 6 testes de interface; 10 cenários da variante SQL Cloud; concorrência exercitada com PostgreSQL 17.6 e duas sessões.
-- Exportação Lovable: instalação com lock congelado, tipagem e build passaram; 40 testes iniciais e 3 adicionais sobre mínimo de senha passaram. A senha mínima solicitada pelo usuário é 6 caracteres; senhas maiores continuam aceitas.
+- Raiz: `npm test` tem 39 testes e passou sem credencial de WhatsApp. A interface Playwright continua com 6 testes em `tests/ui`; o OCR só roda com `OFERTABOT_TEST_OCR=1`. Concorrência com PostgreSQL real segue em `npm run test:postgres` e pede Docker.
+- Exportação Lovable: instalação com lock congelado, tipagem, lint e build passaram; a suíte Vitest tem 43 testes, incluindo os 3 de mínimo de senha. A senha mínima solicitada pelo usuário é 6 caracteres; senhas maiores continuam aceitas.
 - Site publicado: login inexistente rejeitado, APIs sem credenciais bloqueadas, layouts desktop/mobile/iPad conferidos. Telas autenticadas nos testes usam interceptação de respostas; não confundir com sessão positiva de produção.
 - Ainda sem teste real: confirmação/recuperação por e-mail, upload autenticado e fluxo completo de WhatsApp. Não afirmar envio real ou entrega exatamente uma vez.
 - Revisar especialmente: RLS por empresa; credencial revogável e revalidação após locks; caminhos de mídia; deduplicação; captura de mensagens próprias/ciclos; versões aprovadas imutáveis; concorrência de claim; distinção entre falha recuperável e resultado incerto; retenção de horários vencidos.
