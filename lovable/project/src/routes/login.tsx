@@ -12,4 +12,3 @@ export const Route=createFileRoute("/login")({
   }),
   beforeLoad:()=>{throw redirect({to:"/",search:{page:"dashboard"},replace:true});},
 });
-

@@ -1,6 +1,6 @@
 # Registro de execução
 
-Ambiente local inicialmente vazio. Nenhum AGENTS.md encontrado. Lovable conta guilhermecoimbra073@gmail.com, workspace 4ca5229743ac358dc51e; busca e listagem completas não encontraram OfertaBot. GitHub: duas contas acessíveis, nenhuma com repositório OfertaBot identificado. CLI GitHub sem token válido. Repositório Projeto-WhatsApp-com-ia- tem README apenas com o nome; identidade insuficiente, preservado.
+Ambiente local inicialmente vazio. Nenhum AGENTS.md encontrado. Lovable conta do proprietário, workspace 4ca5229743ac358dc51e; busca e listagem completas não encontraram OfertaBot. GitHub: duas contas acessíveis, nenhuma com repositório OfertaBot identificado. CLI GitHub sem token válido. Repositório Projeto-WhatsApp-com-ia- tem README apenas com o nome; identidade insuficiente, preservado.
 
 Tentativa inicial Lovable interrompida sem confirmação. Segunda tentativa rejeitada após mudança de catálogo de ferramentas. Nova consulta em andamento. Nenhuma publicação alegada.
 
@@ -29,3 +29,5 @@ Verificação independente da exportação Lovable: instalação Bun 1.4.3 com -
 Pedido do usuário: mínimo de senha reduzido de 10 para 6 no cadastro e atualização após recuperação; login preservado. Alteração publicada no commit c687b5ae647fec3ac950ade6ab2cb335260edda2. Três testes isolados de formulário passaram. Verificação no site em largura de iPad confirmou rejeição de 5 e aceitação de 6+ no formulário com chamadas interceptadas. Requisição negativa ao Auth com e-mail sintaticamente inválido e senha curta retornou 422 weak_password: "Password should be at least 6 characters.", confirmando o mínimo hospedado sem criar conta/enviar email. Evidência em password-policy-smoke.json. Política local Supabase explicitada como 6.
 
 Pedido para enviar tudo ao GitHub: buscas encontraram somente o novo repositório privado guilhermecoimbra072-hash/ofertabot, na conexão da conta 072. Confirmados acesso de escrita e um único README inicial (# ofertabot). Preparada importação com código local, snapshot Lovable c687b5ae647fec3ac950ade6ab2cb335260edda2, distribuição independente do motor, testes, evidências e guia ANALISE-IA.md. O commit inicial remoto será preservado como pai; nenhum outro projeto é alterado.
+
+23/10/2026: `lovable/project` foi substituída por um snapshot manual da exportação do commit publicado 158ce5541b48f56a31483e36b09aee09eeb8cb39 (178 testes Vitest). GitHub e Lovable não se sincronizam sozinhos. Os arquivos do painel seguem a exportação, com `.gitignore`, `EXPORTACAO.json` e uma asserção de ordenação em `backend-rules.test.ts` ajustados nesta cópia.

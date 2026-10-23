@@ -31,3 +31,10 @@ dist-ssr
 *.sln
 *.sw?
 
+# Local test output and env files. Added in the GitHub copy; not part of the Lovable tree.
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.env.local
+.env.*.local

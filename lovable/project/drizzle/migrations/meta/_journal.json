@@ -15,7 +15,76 @@
       "when": 1792633034898,
       "tag": "0001_ofertabot_final_backend_revision",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792640575498,
+      "tag": "0002_ofertabot_ai_refund",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792640985495,
+      "tag": "0003_ofertabot_ai_refund_service_only",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792641329204,
+      "tag": "0004_ofertabot_ai_refund_server_callable",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792669752008,
+      "tag": "0005_ofertabot_ai_authorize_image",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792671054717,
+      "tag": "0006_ofertabot_ai_image_quota",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792676903311,
+      "tag": "0007_ofertabot_snapshot_pages_media",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792676920497,
+      "tag": "0008_ofertabot_snapshot_authenticated_only",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792682523022,
+      "tag": "0009_ofertabot_platform_access_and_spend",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792682545330,
+      "tag": "0010_ofertabot_platform_management",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792682704196,
+      "tag": "0011_ofertabot_platform_failure_dates",
+      "breakpoints": true
     }
   ]
 }
-

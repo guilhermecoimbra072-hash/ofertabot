@@ -6,7 +6,7 @@
 - **Editor Lovable:** https://lovable.dev/projects/6b91e5a7-7773-40fe-95df-8db9622278c5. TanStack Start/React, um banco Lovable Cloud, Auth e bucket privado `offer-media`.
 - **Motor no notebook:** `ofertabot-motor.zip`, pacote independente com fontes, lockfile, instaladores, Docker e URL já definida. Não contém credencial ou sessão.
 - **Código completo local:** `ofertabot-entrega.zip`, painel React/Vite portável, motor, SQL, adaptadores, testes e documentação.
-- **Código do Lovable:** `ofertabot-lovable.zip`, exportação dos arquivos de texto do projeto hospedado; commit e exclusões registrados em `EXPORTACAO.json`. Preserva TanStack e lockfile Bun. Não inclui `.env`, segredos nem o favicon binário.
+- **Código do Lovable:** `lovable/project/`, snapshot manual do commit publicado `158ce5541b48f56a31483e36b09aee09eeb8cb39`. GitHub e Lovable não se sincronizam sozinhos. Proveniência em `EXPORTACAO.json` e `EXPORT-INFO.md`. Preserva TanStack e lockfile Bun. Não inclui `.env` nem segredos; o favicon binário veio do site publicado.
 - **Configuração privada de teste:** `ofertabot-configuracao-teste.txt`, entregue separadamente, contém a restrição à conta escolhida pelo usuário. O número é a conta a vincular, não um destinatário. Não foi colocado nos fontes públicos.
 - **GitHub para análise:** https://github.com/guilhermecoimbra072-hash/ofertabot. Repositório privado criado pelo usuário, identificado na conexão GitHub correspondente. Importação preserva o commit inicial; veja `ANALISE-IA.md` para localizar o código hospedado e o motor. Não há sincronização automática Lovable/GitHub configurada.
 
@@ -26,11 +26,11 @@ O painel TanStack publicado foi adaptado pelo Lovable a partir do contrato e fun
 | --- | --- |
 | Instalação local | `npm ci`, tipagem e build de painel/motor concluídos; auditoria sem vulnerabilidades reportadas |
 | Motor independente | Lockfile próprio, instalação limpa, compilação e importação Baileys executadas; auditoria de produção: zero |
-| Regras e motor locais | 22 testes passaram: autorização, isolamento, deduplicação, aprovação/versionamento, agenda, revogação, recuperação, resultados incertos, quarentena, dinheiro e restrição de conta |
-| Variante SQL Cloud | 10 testes passaram em PGlite |
+| Regras e motor locais | `npm test` tem 42 testes e passou sem WhatsApp nem segredo: autorização, isolamento, deduplicação, aprovação/versionamento, agenda, revogação, recuperação, resultados incertos, quarentena, dinheiro, restrição de conta, reconexão, confirmação de envio em grupo e instalação |
+| Variante SQL Cloud | 48 testes PGlite em `lovable/project/src/test/backend-rules.test.ts`, dentro dos 178 testes Vitest do painel |
 | Concorrência real | PostgreSQL 17.6 em Docker, duas sessões: claim exclusivo e revogação durante heartbeat bloqueado; 2 cenários passaram |
 | Interface local | 6 testes Chromium: desktop/mobile, edição, aprovação/fila simulada, upload/final e OCR real sobre imagem sintética |
-| Lovable | Migrações aplicadas, 11 tabelas RLS e bucket privado verificados. Na cópia exportada: instalação com Bun e lock congelado, `tsc --noEmit`, 40 testes e build TanStack/Nitro passaram |
+| Lovable | Migrações aplicadas, 11 tabelas RLS e bucket privado verificados. Na cópia do commit 158ce55: instalação com Bun e lock congelado, `tsc --noEmit`, ESLint sem a regra Prettier, 178 testes Vitest e build TanStack/Nitro passaram |
 | Site publicado | Login inexistente rejeitado pelo Auth real (400); engine GET 405, sem credencial 401, token inexistente 403; IA sem JWT 401 |
 | Navegador publicado | Login desktop 1440×1000 e celular 390×844, sem erros JavaScript ou overflow; capturas inspecionadas visualmente |
 | Docker do motor | Imagem construída e execução sem root/rede testada; Baileys/cofre e restrição de conta verificados |

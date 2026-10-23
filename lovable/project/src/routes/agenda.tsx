@@ -12,4 +12,3 @@ export const Route=createFileRoute("/agenda")({
   }),
   beforeLoad:()=>{throw redirect({to:"/",search:{page:"schedule"},replace:true});},
 });
-

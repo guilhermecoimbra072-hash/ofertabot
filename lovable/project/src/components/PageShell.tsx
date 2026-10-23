@@ -25,4 +25,3 @@ export function PageShell({ title, description, icon: Icon, emptyTitle, emptyTex
     </div>
   );
 }
-

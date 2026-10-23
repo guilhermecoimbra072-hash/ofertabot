@@ -12,4 +12,3 @@ export const Route=createFileRoute("/ofertas")({
   }),
   beforeLoad:()=>{throw redirect({to:"/",search:{page:"offers"},replace:true});},
 });
-

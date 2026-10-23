@@ -377,4 +377,3 @@ revoke all on function public.app_snapshot(uuid),public.app_action(text,jsonb),p
 grant execute on function public.app_snapshot(uuid),public.app_action(text,jsonb),public.ai_authorize(uuid,uuid) to authenticated;
 grant execute on function public.engine_context(text),public.engine_call(text,text,jsonb),public.admin_set_plan(uuid,text,int) to service_role;
 grant select,insert,update,delete on all tables in schema public to service_role;
-

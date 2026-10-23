@@ -12,4 +12,3 @@ export const Route=createFileRoute("/grupos")({
   }),
   beforeLoad:()=>{throw redirect({to:"/",search:{page:"groups"},replace:true});},
 });
-

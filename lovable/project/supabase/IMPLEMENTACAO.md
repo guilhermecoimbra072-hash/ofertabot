@@ -1,5 +1,11 @@
 # OfertaBot — resultado da implantação do backend
 
+## Verificação atual — 23/10/2026
+- Suíte completa atual: **178/178 testes aprovados em 13 arquivos**; build automático OK. As contagens abaixo são históricas das revisões indicadas.
+- Ajuste exclusivamente do painel: Salvar aguarda a IA da foto com fallback por código (espera de segurança de 45 s, sem abortar chamada/cache); símbolos de moeda em tela; removidos dois controles do editor. Nenhuma migração, função, cota, segredo ou dado de banco alterado.
+- Documentos sem e-mail pessoal. `.gitignore` permanece pendente: ambiente recusou edição por ser somente leitura. Lint executado: 2409 erros de formatação e 13 avisos; reformatação em massa não aplicada.
+- Navegador autenticado validado com escritas/uploads/IA isolados; nenhuma oferta real alterada, nenhum WhatsApp enviado e nenhuma publicação.
+
 ## Revisão FINAL aplicada em 22/10/2026
 
 - Estado inicial consultado: 11 tabelas existentes com RLS, zero empresas e zero contas; bucket privado correto. A aplicação foi incremental, não uma recriação.

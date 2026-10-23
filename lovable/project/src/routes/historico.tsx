@@ -12,4 +12,3 @@ export const Route=createFileRoute("/historico")({
   }),
   beforeLoad:()=>{throw redirect({to:"/",search:{page:"history"},replace:true});},
 });
-

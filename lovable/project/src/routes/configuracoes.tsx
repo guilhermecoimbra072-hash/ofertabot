@@ -12,4 +12,3 @@ export const Route=createFileRoute("/configuracoes")({
   }),
   beforeLoad:()=>{throw redirect({to:"/",search:{page:"engine"},replace:true});},
 });
-

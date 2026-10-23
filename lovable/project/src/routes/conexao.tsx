@@ -12,4 +12,3 @@ export const Route=createFileRoute("/conexao")({
   }),
   beforeLoad:()=>{throw redirect({to:"/",search:{page:"whatsapp"},replace:true});},
 });
-

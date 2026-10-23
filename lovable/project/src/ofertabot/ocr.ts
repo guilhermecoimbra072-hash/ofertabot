@@ -6,4 +6,3 @@ export async function recognizePrices(image:string):Promise<OcrRegion[]>{
  for(const block of data.blocks??[])for(const paragraph of block.paragraphs)for(const line of paragraph.lines){if(/\d+[,.]\d{2}|R\$|US\$|\bGs\b/.test(line.text))regions.push({text:line.text.trim(),confidence:line.confidence,box:line.bbox});}return regions;
  }finally{await worker.terminate();}
 }
-

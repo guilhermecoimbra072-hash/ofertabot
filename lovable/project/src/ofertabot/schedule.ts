@@ -13,4 +13,3 @@ export function resolveEngineUrl(canonical:string|undefined,origin:string):strin
  if(url.protocol!=='https:'||url.hostname.includes('preview')||url.hostname.includes('-dev.')||url.hostname.startsWith('id-'))return '';
  return url.origin+'/api/public/engine-api';
 }
-

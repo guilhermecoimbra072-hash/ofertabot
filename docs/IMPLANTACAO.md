@@ -2,7 +2,7 @@
 
 ## Projeto identificado
 
-Lovable: https://lovable.dev/projects/6b91e5a7-7773-40fe-95df-8db9622278c5, workspace da conta `guilhermecoimbra073@gmail.com`. Criado exclusivamente para OfertaBot, sem alterar os outros 29 projetos encontrados. Backend aplicado e site publicado em https://ofertabot-central.lovable.app. O esquema inicial e a revisão de segurança constam do journal de migrações Drizzle da plataforma. Veja a evidência atual em `ENTREGA.md`.
+Lovable: https://lovable.dev/projects/6b91e5a7-7773-40fe-95df-8db9622278c5, workspace do proprietário. Criado exclusivamente para OfertaBot, sem alterar os outros 29 projetos encontrados. Backend aplicado e site publicado em https://ofertabot-central.lovable.app. O esquema inicial e a revisão de segurança constam do journal de migrações Drizzle da plataforma. Veja a evidência atual em `ENTREGA.md`.
 
 A stack gerada é TanStack Start com React. Ela usa rotas HTTP próprias para novas APIs, não novas Edge Functions. Por isso a entrega inclui adaptação específica e o pacote portável Supabase; ambos compartilham as mesmas regras e usam **um único banco escolhido na implantação**.
 

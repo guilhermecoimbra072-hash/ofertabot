@@ -1,4 +1,11 @@
 # OfertaBot — backend aprovado
+- [x] Salvar aguarda IA em um clique com fallback; símbolos de moeda, editor simplificado e documentos sem e-mail pessoal; 178/178 testes, build OK e navegador isolado sem dados reais alterados/publicação.
+- [ ] Acrescentar coverage/, test-results/, playwright-report/, blob-report/, .env.local e .env.*.local ao .gitignore: arquivo protegido, edição recusada pelo ambiente.
+- [x] Executar lint e classificar problemas: 2409 erros exclusivamente de formatação e 13 avisos; sem reformatação em massa conforme pedido.
+- [x] Painel separado da plataforma com dados reais, operador inicial, pausa, cotas, gasto mensal e confirmações; empresa preservada e sem publicação.
+- [x] Temas claro/escuro persistidos; 166 testes e navegação desktop/mobile sem alterar empresas reais; servidor recusou inclusão de usuário inexistente.
+- [x] Destacar evolução diária real de ofertas recebidas e publicações enviadas, com leitura privada e sem mudar banco ou ações; períodos 7/30 dias verificados com conta real e no celular, quatro testes aprovados.
+- [x] Aplicar material azul/ciano de vidro em todas as telas, anéis com contadores reais e ocultar marca Lovable; 40 regressões aprovadas, navegação desktop/mobile somente leitura sem erros; marca ausente no site publicado, sem republicação.
 - [x] Integrar painel: auth, empresas, navegação, Canvas/OCR, revisão e fila; correspondência literal limitada pela ausência dos conteúdos completos no pedido disponível.
 - [x] Aplicar visual claro e redirecionar rotas legadas sem shell/login fake.
 - [x] Validar telas desktop/mobile com interceptações isoladas, login inválido real, 40 testes e compilação automática; registrar limites da validação.
@@ -17,4 +24,11 @@
 - [x] Executar novamente testes relevantes do painel: 14/14 aprovados.
 - [ ] Tipagem independente `bunx tsc --noEmit`: execução manual proibida pelas instruções do ambiente; nenhum resultado independente disponível nos checks armazenados.
 - [ ] Site URL e lista hospedada de redirects Auth: não expostos pelas ferramentas de leitura disponíveis; código envia a origem publicada e /?recovery=1, mas a autorização hospedada não foi verificada.
+- [x] Melhoria da foto por IA: rota /api/public/image-enhance (JWT + papel + cota com estorno), modelo google/gemini-3.1-flash-lite-image configurável por AI_IMAGE_MODEL, cache privado por imagem original, fallback silencioso; 107/107 testes, 3 amostras reais em public/img-test/ (custo médio 0,13563 créditos/imagem).
+- [x] Remover public/img-test/ antes de publicar (o usuário baixa as amostras pela prévia e depois pede a remoção).
+- [x] Melhoria por IA automática em toda oferta: salvar regera edited_image quando a melhorada chega (sem mudar preço), cache por foto, cota separada de 30 imagens/hora com estorno próprio (migração 0006), prompt endurecido, 119/119 testes, E2E com cópia [TESTE] removida depois.
 
+- [x] Paginação de 100 no servidor, busca no servidor e mídias vídeo/áudio/documento (0007/0008)
+
+- [x] Aplicar visual Approval Tracker (preto/menta/Inter), preservar ações; 40 regressões aprovadas, acesso e dez telas conferidos em desktop/mobile com conta real, somente navegação e nenhuma mutação.
+- [x] Dashboard do cliente no modelo Request Tracker (preto/cinza/verde, cantos arredondados): saudação, 4 indicadores reais, barras verdes 7/30 dias, rosca de status real, recentes e conexão; temas claro/escuro mantidos; 169 testes e verificação desktop/mobile sem overflow; não publicado.

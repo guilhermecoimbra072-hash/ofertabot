@@ -54,33 +54,54 @@ export type Database = {
       }
       companies: {
         Row: {
+          access_status: string
+          ai_cost_minor: number
+          ai_hourly_limit: number
           brand: Json
           created_at: string
           group_limit: number
           id: string
+          image_cost_minor: number
+          image_hourly_limit: number
           name: string
+          paused_reason: string | null
           plan: string
           settings: Json
+          spend_limit_minor: number | null
           timezone: string
         }
         Insert: {
+          access_status?: string
+          ai_cost_minor?: number
+          ai_hourly_limit?: number
           brand?: Json
           created_at?: string
           group_limit?: number
           id?: string
+          image_cost_minor?: number
+          image_hourly_limit?: number
           name: string
+          paused_reason?: string | null
           plan?: string
           settings?: Json
+          spend_limit_minor?: number | null
           timezone?: string
         }
         Update: {
+          access_status?: string
+          ai_cost_minor?: number
+          ai_hourly_limit?: number
           brand?: Json
           created_at?: string
           group_limit?: number
           id?: string
+          image_cost_minor?: number
+          image_hourly_limit?: number
           name?: string
+          paused_reason?: string | null
           plan?: string
           settings?: Json
+          spend_limit_minor?: number | null
           timezone?: string
         }
         Relationships: []
@@ -316,6 +337,7 @@ export type Database = {
           connection_id: string
           created_at: string
           error_code: string | null
+          failed_at: string | null
           group_id: string
           id: string
           idempotency_key: string
@@ -339,6 +361,7 @@ export type Database = {
           connection_id: string
           created_at?: string
           error_code?: string | null
+          failed_at?: string | null
           group_id: string
           id?: string
           idempotency_key: string
@@ -362,6 +385,7 @@ export type Database = {
           connection_id?: string
           created_at?: string
           error_code?: string | null
+          failed_at?: string | null
           group_id?: string
           id?: string
           idempotency_key?: string
@@ -445,13 +469,41 @@ export type Database = {
         Args: { p_company: string; p_offer: string }
         Returns: Json
       }
+      ai_authorize_image: {
+        Args: { p_company: string; p_offer: string }
+        Returns: Json
+      }
+      ai_refund: {
+        Args: { p_company: string; p_offer: string }
+        Returns: undefined
+      }
+      ai_refund_image: {
+        Args: { p_company: string; p_offer: string }
+        Returns: undefined
+      }
       app_action: { Args: { p_action: string; p_payload: Json }; Returns: Json }
-      app_snapshot: { Args: { p_company?: string }; Returns: Json }
+      app_snapshot: {
+        Args: {
+          p_audit_offset?: number
+          p_company?: string
+          p_offer_offset?: number
+          p_offer_status?: string
+          p_publication_offset?: number
+          p_search?: string
+        }
+        Returns: Json
+      }
       engine_call: {
         Args: { p_action: string; p_payload?: Json; p_token: string }
         Returns: Json
       }
       engine_context: { Args: { p_token: string }; Returns: Json }
+      is_platform_admin: { Args: never; Returns: boolean }
+      platform_action: {
+        Args: { p_action: string; p_actor: string; p_payload: Json }
+        Returns: undefined
+      }
+      platform_snapshot: { Args: { p_company?: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
@@ -584,4 +636,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-

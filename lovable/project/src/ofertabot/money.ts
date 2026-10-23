@@ -9,5 +9,14 @@ export function parseMoney(value:string,currency:string):string|null {
  return (BigInt(integer)*10n**BigInt(d)+BigInt(fraction.padEnd(d,'0')||'0')).toString();
 }
 export function decimalMoney(minor:string|null,currency:string){if(minor===null)return '';const d=digits(currency),s=minor.padStart(d+1,'0');return d?s.slice(0,-d)+','+s.slice(-d):s;}
-export function formatMoney(minor:string|null,currency:string){return minor===null?'Sem preço definido':`${currency} ${decimalMoney(minor,currency)}`;}
-
+export function formatMoney(minor:string|null,currency:string){return minor===null?'Sem preço definido':displayMoney(minor,currency);}
+const symbols:Record<string,string>={BRL:'R$',USD:'US$',PYG:'₲',EUR:'€'};
+/** Exibição com símbolo da moeda e separadores corretos: BRL/EUR/PYG em pt-BR, USD em en-US. */
+export function displayMoney(minor:string|null,currency:string){
+ if(minor===null)return '';
+ const d=digits(currency),s=minor.padStart(d+1,'0');
+ const int=d?s.slice(0,-d):s,frac=d?s.slice(-d):'';
+ const us=currency==='USD';
+ const grouped=int.replace(/\B(?=(\d{3})+(?!\d))/g,us?',':'.');
+ return `${symbols[currency]??currency} ${grouped}${d?(us?'.':',')+frac:''}`;
+}

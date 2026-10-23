@@ -1,6 +1,6 @@
 # OfertaBot
 
-**Para análise técnica:** comece por [ANALISE-IA.md](ANALISE-IA.md). O projeto publicado está exportado em `lovable/project/`; o motor independente está em `distribuicao/motor/`.
+**Para análise técnica:** comece por [ANALISE-IA.md](ANALISE-IA.md). O projeto publicado está em `lovable/project/`, um snapshot manual do commit Lovable `158ce5541b48f56a31483e36b09aee09eeb8cb39`. GitHub e Lovable não se sincronizam sozinhos. O motor independente está em `distribuicao/motor/`.
 
 **Painel publicado:** https://ofertabot-central.lovable.app — backend e armazenamento privado implantados no Lovable Cloud. O primeiro cadastro válido e o teste com seu WhatsApp ainda precisam ser feitos por você. Veja [docs/ENTREGA.md](docs/ENTREGA.md).
 
@@ -40,6 +40,8 @@ npx playwright install chromium
 npm run test:ui
 npm run build
 ```
+
+`npm test` cobre 42 casos do motor e das regras, sem credencial de WhatsApp. A integração contínua no GitHub repete instalação limpa, tipagem, build e esses testes na raiz, e tipagem, lint, Vitest (178 casos, `bunx vitest run`) e build em `lovable/project`. Playwright, PostgreSQL concorrente e a stack Supabase local continuam opcionais.
 
 A integração Baileys está fixada em `7.0.0-rc14`, versão publicada no registro npm, instalada, importada e tipada neste ambiente. É uma **release candidate** e uma integração não oficial: a compatibilidade real de vinculação e envio depende do seu teste. Não há promessa de estabilidade do protocolo nem de entrega exatamente uma vez. `package-lock.json` fixa a árvore instalada. `npm audit` faz parte da verificação.
 

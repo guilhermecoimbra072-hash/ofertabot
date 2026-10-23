@@ -17,7 +17,9 @@ import { Route as GruposRouteImport } from './routes/grupos'
 import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OfertasRouteImport } from './routes/ofertas'
+import { Route as PlataformaRouteImport } from './routes/plataforma'
 import { Route as ApiPublicEngineApiRouteImport } from './routes/api/public/engine-api'
+import { Route as ApiPublicImageEnhanceRouteImport } from './routes/api/public/image-enhance'
 import { Route as ApiPublicRewriteRouteImport } from './routes/api/public/rewrite'
 
 const IndexRoute = IndexRouteImport.update({
@@ -60,9 +62,19 @@ const OfertasRoute = OfertasRouteImport.update({
   path: '/ofertas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlataformaRoute = PlataformaRouteImport.update({
+  id: '/plataforma',
+  path: '/plataforma',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicEngineApiRoute = ApiPublicEngineApiRouteImport.update({
   id: '/api/public/engine-api',
   path: '/api/public/engine-api',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicImageEnhanceRoute = ApiPublicImageEnhanceRouteImport.update({
+  id: '/api/public/image-enhance',
+  path: '/api/public/image-enhance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicRewriteRoute = ApiPublicRewriteRouteImport.update({
@@ -80,7 +92,9 @@ export interface FileRoutesByFullPath {
   '/historico': typeof HistoricoRoute
   '/login': typeof LoginRoute
   '/ofertas': typeof OfertasRoute
+  '/plataforma': typeof PlataformaRoute
   '/api/public/engine-api': typeof ApiPublicEngineApiRoute
+  '/api/public/image-enhance': typeof ApiPublicImageEnhanceRoute
   '/api/public/rewrite': typeof ApiPublicRewriteRoute
 }
 export interface FileRoutesByTo {
@@ -92,7 +106,9 @@ export interface FileRoutesByTo {
   '/historico': typeof HistoricoRoute
   '/login': typeof LoginRoute
   '/ofertas': typeof OfertasRoute
+  '/plataforma': typeof PlataformaRoute
   '/api/public/engine-api': typeof ApiPublicEngineApiRoute
+  '/api/public/image-enhance': typeof ApiPublicImageEnhanceRoute
   '/api/public/rewrite': typeof ApiPublicRewriteRoute
 }
 export interface FileRoutesById {
@@ -105,7 +121,9 @@ export interface FileRoutesById {
   '/historico': typeof HistoricoRoute
   '/login': typeof LoginRoute
   '/ofertas': typeof OfertasRoute
+  '/plataforma': typeof PlataformaRoute
   '/api/public/engine-api': typeof ApiPublicEngineApiRoute
+  '/api/public/image-enhance': typeof ApiPublicImageEnhanceRoute
   '/api/public/rewrite': typeof ApiPublicRewriteRoute
 }
 export interface FileRouteTypes {
@@ -119,7 +137,9 @@ export interface FileRouteTypes {
     | '/historico'
     | '/login'
     | '/ofertas'
+    | '/plataforma'
     | '/api/public/engine-api'
+    | '/api/public/image-enhance'
     | '/api/public/rewrite'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -131,7 +151,9 @@ export interface FileRouteTypes {
     | '/historico'
     | '/login'
     | '/ofertas'
+    | '/plataforma'
     | '/api/public/engine-api'
+    | '/api/public/image-enhance'
     | '/api/public/rewrite'
   id:
     | '__root__'
@@ -143,7 +165,9 @@ export interface FileRouteTypes {
     | '/historico'
     | '/login'
     | '/ofertas'
+    | '/plataforma'
     | '/api/public/engine-api'
+    | '/api/public/image-enhance'
     | '/api/public/rewrite'
   fileRoutesById: FileRoutesById
 }
@@ -156,7 +180,9 @@ export interface RootRouteChildren {
   HistoricoRoute: typeof HistoricoRoute
   LoginRoute: typeof LoginRoute
   OfertasRoute: typeof OfertasRoute
+  PlataformaRoute: typeof PlataformaRoute
   ApiPublicEngineApiRoute: typeof ApiPublicEngineApiRoute
+  ApiPublicImageEnhanceRoute: typeof ApiPublicImageEnhanceRoute
   ApiPublicRewriteRoute: typeof ApiPublicRewriteRoute
 }
 
@@ -218,11 +244,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OfertasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/plataforma': {
+      id: '/plataforma'
+      path: '/plataforma'
+      fullPath: '/plataforma'
+      preLoaderRoute: typeof PlataformaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/engine-api': {
       id: '/api/public/engine-api'
       path: '/api/public/engine-api'
       fullPath: '/api/public/engine-api'
       preLoaderRoute: typeof ApiPublicEngineApiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/image-enhance': {
+      id: '/api/public/image-enhance'
+      path: '/api/public/image-enhance'
+      fullPath: '/api/public/image-enhance'
+      preLoaderRoute: typeof ApiPublicImageEnhanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/rewrite': {
@@ -244,7 +284,9 @@ const rootRouteChildren: RootRouteChildren = {
   HistoricoRoute: HistoricoRoute,
   LoginRoute: LoginRoute,
   OfertasRoute: OfertasRoute,
+  PlataformaRoute: PlataformaRoute,
   ApiPublicEngineApiRoute: ApiPublicEngineApiRoute,
+  ApiPublicImageEnhanceRoute: ApiPublicImageEnhanceRoute,
   ApiPublicRewriteRoute: ApiPublicRewriteRoute,
 }
 export const routeTree = rootRouteImport

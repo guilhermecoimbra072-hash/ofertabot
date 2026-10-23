@@ -19,3 +19,11 @@
 - Use the generated browser client and React Query for panel snapshots/mutations; preserve preview auth storage rather than creating another client.
 - Load panel CSS after platform CSS and keep legacy routes as redirects to the root panel; this removes duplicate shells while preserving infrastructure.
 
+- Keep panel visual tokens and shared presentation in src/ofertabot/styles.css with fonts loaded by the root head; isolate interface restyling from Canvas artwork tokens so generated offer images do not change.
+- Daily activity reads all date-filtered pages through the generated browser client and tenant RLS; use received_at and sent_at in the company timezone, never infer missing failure timestamps.
+- Platform reads use an authenticated SQL RPC guarded by private operator membership; mutations use an authenticated server function, recheck membership in SQL, and load the administrative client only after verification. Tenant snapshots expose only membership and the platform flag, never other tenants.
+- Preserve existing SQL RPC bodies through checked additive definition patches; monthly AI charges retain original cost/month in a private ledger so refunds do not depend on later configuration changes.
+- Track publication failure transitions with a timestamp trigger and backfill only from verified failure audit events; unknown historical failure dates are never inferred from creation dates.
+- Keep platform presentation separate in src/ofertabot and share document-level persisted theme controls; panel-only theme tokens must not alter offer artwork.
+
+- Offer saves await the current ImageEditor enhancement promise before rendering/uploading artwork; a save-only safety wait falls back without aborting the gateway/cache, preventing early or late image races.
