@@ -53,7 +53,11 @@ export class BaileysTransport implements Transport {
      this.attempts=plan.nextAttempt;this.write(plan.line);this.arm(connect,plan.delayMs);
     }
    });
-   sock.ev.on('messages.update',updates=>{if(current!==this.generation)return;for(const u of updates){const id=u.key.id;if(id && (u.update.status??0)>=proto.WebMessageInfo.Status.SERVER_ACK){this.acknowledgements.add(id);this.listeners.get(id)?.ok();if(this.acknowledgements.size>1000)this.acknowledgements.delete(this.acknowledgements.values().next().value!);}}});
+   const acknowledge=(id:string)=>{this.acknowledgements.add(id);this.listeners.get(id)?.ok();if(this.acknowledgements.size>1000)this.acknowledgements.delete(this.acknowledgements.values().next().value!);};
+   sock.ev.on('messages.update',updates=>{if(current!==this.generation)return;for(const u of updates){const id=u.key.id;if(id && (u.update.status??0)>=proto.WebMessageInfo.Status.SERVER_ACK)acknowledge(id);}});
+   // Grupos: o Baileys não emite messages.update com SERVER_ACK; a confirmação vem no nó ack do servidor (sem erro) e nos recibos dos participantes.
+   (sock as unknown as {ws?:{on?:(event:string,fn:(node:{attrs?:Record<string,string>})=>void)=>void}}).ws?.on?.('CB:ack,class:message',node=>{if(current!==this.generation)return;const a=node?.attrs;if(a?.id && !a.error)acknowledge(a.id);});
+   sock.ev.on('message-receipt.update',updates=>{if(current!==this.generation)return;for(const u of updates){if(u.key.fromMe && u.key.id)acknowledge(u.key.id);}});
    sock.ev.on('messages.upsert',({messages,type})=>{
     if(current!==this.generation||type!=='notify'||this.status!=='connected')return;
     for(const m of messages){

@@ -52,7 +52,7 @@ O build TanStack usa `bun run build`; variáveis públicas fictícias bastam par
 
 ## Estado de verificação e pontos de revisão
 
-- Raiz: `npm test` tem 39 testes e passou sem credencial de WhatsApp. A interface Playwright continua com 6 testes em `tests/ui`; o OCR só roda com `OFERTABOT_TEST_OCR=1`. Concorrência com PostgreSQL real segue em `npm run test:postgres` e pede Docker.
+- Raiz: `npm test` tem 42 testes e passou sem credencial de WhatsApp. A interface Playwright continua com 6 testes em `tests/ui`; o OCR só roda com `OFERTABOT_TEST_OCR=1`. Concorrência com PostgreSQL real segue em `npm run test:postgres` e pede Docker.
 - Exportação Lovable: a pasta no GitHub é um snapshot manual do commit `158ce5541b48f56a31483e36b09aee09eeb8cb39`, não uma sincronização automática. A suíte Vitest tem 178 testes em 13 arquivos, incluindo os 3 de mínimo de senha. A senha mínima solicitada pelo usuário é 6 caracteres; senhas maiores continuam aceitas.
 - Site publicado: login inexistente rejeitado, APIs sem credenciais bloqueadas, layouts desktop/mobile/iPad conferidos. Telas autenticadas nos testes usam interceptação de respostas; não confundir com sessão positiva de produção.
 - Ainda sem teste real: confirmação/recuperação por e-mail, upload autenticado e fluxo completo de WhatsApp. Não afirmar envio real ou entrega exatamente uma vez.

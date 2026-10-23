@@ -26,7 +26,7 @@ O painel TanStack publicado foi adaptado pelo Lovable a partir do contrato e fun
 | --- | --- |
 | Instalação local | `npm ci`, tipagem e build de painel/motor concluídos; auditoria sem vulnerabilidades reportadas |
 | Motor independente | Lockfile próprio, instalação limpa, compilação e importação Baileys executadas; auditoria de produção: zero |
-| Regras e motor locais | `npm test` tem 39 testes e passou sem WhatsApp nem segredo: autorização, isolamento, deduplicação, aprovação/versionamento, agenda, revogação, recuperação, resultados incertos, quarentena, dinheiro, restrição de conta, reconexão e instalação |
+| Regras e motor locais | `npm test` tem 42 testes e passou sem WhatsApp nem segredo: autorização, isolamento, deduplicação, aprovação/versionamento, agenda, revogação, recuperação, resultados incertos, quarentena, dinheiro, restrição de conta, reconexão, confirmação de envio em grupo e instalação |
 | Variante SQL Cloud | 48 testes PGlite em `lovable/project/src/test/backend-rules.test.ts`, dentro dos 178 testes Vitest do painel |
 | Concorrência real | PostgreSQL 17.6 em Docker, duas sessões: claim exclusivo e revogação durante heartbeat bloqueado; 2 cenários passaram |
 | Interface local | 6 testes Chromium: desktop/mobile, edição, aprovação/fila simulada, upload/final e OCR real sobre imagem sintética |

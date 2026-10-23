@@ -175,7 +175,7 @@ test('motor distribuído espelha engine/src',async()=>{
 
 function fakeSocket(userId?:string){
  const listeners=new Map<string,Array<(payload:unknown)=>void>>();
- const sock={user:userId?{id:userId}:undefined,ended:false,ev:{on(event:string,fn:(payload:unknown)=>void){const list=listeners.get(event)??[];list.push(fn);listeners.set(event,list);}},end(){sock.ended=true;},emit(event:string,payload:unknown){for(const fn of [...(listeners.get(event)??[])])fn(payload);}};
+ const sock={user:userId?{id:userId}:undefined,ended:false,ev:{on(event:string,fn:(payload:unknown)=>void){const list=listeners.get(event)??[];list.push(fn);listeners.set(event,list);}},ws:{on(event:string,fn:(payload:unknown)=>void){const list=listeners.get(`ws:${event}`)??[];list.push(fn);listeners.set(`ws:${event}`,list);}},sent:[] as string[],async sendMessage(){const id=`MSG${sock.sent.length+1}`;sock.sent.push(id);return {key:{id},status:1};},end(){sock.ended=true;},emit(event:string,payload:unknown){for(const fn of [...(listeners.get(event)??[])])fn(payload);}};
  return sock;
 }
 async function transportFixture(random:()=>number=()=>0,expectedPhone?:string){
@@ -261,4 +261,33 @@ test('queda de um socket substituído não derruba a sessão nova',async()=>{
   assert.equal(fx.transport.status,'disconnected');
   assert.equal(fx.queued.length,1);
  }finally{await fx.clean();}
+});
+
+test('envio para grupo confirma pelo ack do servidor (sem esperar 45 s)',async()=>{
+ const fx=await transportFixture(()=>0);try{
+  const sock=fx.sockets[0]!;sock.emit('connection.update',{connection:'open'});
+  const p=fx.transport.send('123@g.us','oi');
+  await new Promise(r=>setImmediate(r));
+  sock.emit('ws:CB:ack,class:message',{attrs:{id:'MSG1',from:'123@g.us'}});
+  assert.equal(await p,'MSG1');
+ }finally{await fx.transport.stop();await fx.clean();}
+});
+test('ack do servidor com erro não confirma envio para grupo',async()=>{
+ const fx=await transportFixture(()=>0);try{
+  const sock=fx.sockets[0]!;sock.emit('connection.update',{connection:'open'});
+  const p=fx.transport.send('123@g.us','oi');
+  await new Promise(r=>setImmediate(r));
+  sock.emit('ws:CB:ack,class:message',{attrs:{id:'MSG1',error:'479'}});
+  close(sock,408);
+  await assert.rejects(p,/Conexão interrompida/);
+ }finally{await fx.transport.stop();await fx.clean();}
+});
+test('recibo de participante do grupo também confirma o envio',async()=>{
+ const fx=await transportFixture(()=>0);try{
+  const sock=fx.sockets[0]!;sock.emit('connection.update',{connection:'open'});
+  const p=fx.transport.send('123@g.us','oi');
+  await new Promise(r=>setImmediate(r));
+  sock.emit('message-receipt.update',[{key:{remoteJid:'123@g.us',id:'MSG1',fromMe:true},receipt:{userJid:'5511@s.whatsapp.net',receiptTimestamp:1}}]);
+  assert.equal(await p,'MSG1');
+ }finally{await fx.transport.stop();await fx.clean();}
 });

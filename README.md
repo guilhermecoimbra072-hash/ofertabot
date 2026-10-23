@@ -41,7 +41,7 @@ npm run test:ui
 npm run build
 ```
 
-`npm test` cobre 39 casos do motor e das regras, sem credencial de WhatsApp. A integração contínua no GitHub repete instalação limpa, tipagem, build e esses testes na raiz, e tipagem, lint, Vitest (178 casos, `bunx vitest run`) e build em `lovable/project`. Playwright, PostgreSQL concorrente e a stack Supabase local continuam opcionais.
+`npm test` cobre 42 casos do motor e das regras, sem credencial de WhatsApp. A integração contínua no GitHub repete instalação limpa, tipagem, build e esses testes na raiz, e tipagem, lint, Vitest (178 casos, `bunx vitest run`) e build em `lovable/project`. Playwright, PostgreSQL concorrente e a stack Supabase local continuam opcionais.
 
 A integração Baileys está fixada em `7.0.0-rc14`, versão publicada no registro npm, instalada, importada e tipada neste ambiente. É uma **release candidate** e uma integração não oficial: a compatibilidade real de vinculação e envio depende do seu teste. Não há promessa de estabilidade do protocolo nem de entrega exatamente uma vez. `package-lock.json` fixa a árvore instalada. `npm audit` faz parte da verificação.
 
