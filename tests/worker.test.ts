@@ -27,3 +27,44 @@ test('conta esperada aceita DDI/dispositivo e bloqueia outra conta ou identidade
 test('envio confirmado registra uma linha sem texto, jid ou telefone',async()=>{const f=await fixture();const lines:string[]=[];try{const phone='5511988887777';const original=f.api.call.bind(f.api);f.api.call=async(a,p)=>a==='claim'?{id:'pub-1',lease_token:'lease1',jid:`${phone}@g.us`,text:`oferta secreta ${phone}`,image:null} as any:original(a,p);const worker=new Worker(f.api,f.transport,f.vault,line=>lines.push(line));await worker.once();assert.deepEqual(lines,['send_outcome id=pub-1 outcome=sent']);assert.equal(lines.join('\n').includes(phone),false);assert.equal(lines.join('\n').includes('oferta'),false);assert.equal(lines.join('\n').includes('@g.us'),false);}finally{await f.clean();}});
 test('falha de transporte e pré-envio registram o resultado sem conteúdo',async()=>{const f=await fixture();const lines:string[]=[];try{const phone='5511977776666';f.transport.fail=true;const original=f.api.call.bind(f.api);const worker=new Worker(f.api,f.transport,f.vault,line=>lines.push(line));f.api.call=async(a,p)=>a==='claim'?{id:'pub-2',lease_token:'lease1',jid:`${phone}@g.us`,text:`texto ${phone}`,image:null} as any:original(a,p);await worker.once();assert.deepEqual(lines,['send_outcome id=pub-2 outcome=uncertain reason=transport_error']);f.transport.fail=false;f.api.image=async()=>{throw Error('offline');};f.api.call=async(a,p)=>a==='claim'?{id:'pub/3\nsegredo',lease_token:'lease1',jid:`${phone}@g.us`,text:`texto ${phone}`,image:'x'} as any:original(a,p);await worker.once();assert.equal(lines.length,2);assert.equal(lines[1],'send_outcome id=pub3segredo outcome=retryable reason=preflight');assert.equal(lines[1].includes('\n'),false);assert.equal(lines.join('\n').includes(phone),false);assert.equal(lines.join('\n').includes('texto'),false);}finally{await f.clean();}});
 test('motivo do envio usa código fixo e descarta a mensagem bruta',async()=>{const {sendFailureReason,sendOutcomeLine}=await import('../engine/src/worker');assert.equal(sendFailureReason(new Error('Confirmação não recebida')),'ack_timeout');assert.equal(sendFailureReason(new Error('Conexão interrompida')),'connection_interrupted');assert.equal(sendFailureReason(new Error('WhatsApp desconectado')),'disconnected');assert.equal(sendFailureReason(new Error('Sem identificador')),'no_id');assert.equal(sendFailureReason(new Error('jid 5511999999999 failed')),'transport_error');assert.equal(sendOutcomeLine('pub\n5511999999999','sent','ack_timeout'),'send_outcome id=pub5511999999999 outcome=sent reason=ack_timeout');});
+
+test('erro momentâneo do banco ou lease não manda captura para quarentena',async()=>{const {CaptureQueue,AMBIGUOUS_REJECTION_MS}=await import('../engine/src/capture-queue');const f=await fixture();try{
+ let now=1_000_000;let failure:Error|undefined=Object.assign(Error('Backend 409: Motor sem lease'),{status:409});
+ const original=f.api.call.bind(f.api);f.api.call=async(a,p)=>{if(a==='capture'&&failure)throw failure;return original(a,p);};
+ const queue=new CaptureQueue(f.api,f.vault,()=>now);await queue.load();
+ await queue.add({message_id:'m1',group_jid:'g@g.us',received_at:new Date().toISOString(),text:'x',from_me:false,media_kind:'text',media_status:'ready'});
+ const {readdir}=await import('node:fs/promises');const quarantined=async()=>(await readdir(f.dir)).some(p=>p.startsWith('quarantine-'));
+ await assert.rejects(queue.flush(),/Motor sem lease/);now+=AMBIGUOUS_REJECTION_MS*3;await assert.rejects(queue.flush(),/Motor sem lease/);
+ assert.equal(queue.pending,1);assert.equal(await quarantined(),false);
+ failure=Object.assign(Error('Backend 409: canceling statement due to statement timeout'),{status:409});
+ await assert.rejects(queue.flush(),/timeout/);now+=60_000;await assert.rejects(queue.flush(),/timeout/);
+ assert.equal(queue.pending,1);assert.equal(await quarantined(),false);
+ // Recarregar do disco preserva o início da falha.
+ const reloaded=new CaptureQueue(f.api,f.vault,()=>now);await reloaded.load();
+ failure=undefined;await reloaded.flush();assert.equal(reloaded.pending,0);assert.equal(await quarantined(),false);
+ assert.ok(f.calls.some(c=>c.action==='capture'&&c.payload.message_id==='m1'));
+ // Rejeição ambígua que persiste além da janela vai para quarentena e libera a fila.
+ failure=Object.assign(Error('Backend 409: erro desconhecido'),{status:409});
+ await reloaded.add({message_id:'m2',group_jid:'g@g.us',received_at:new Date().toISOString(),text:'y',from_me:false,media_kind:'text',media_status:'ready'});
+ await assert.rejects(reloaded.flush());assert.equal(reloaded.pending,1);
+ now+=AMBIGUOUS_REJECTION_MS;await reloaded.flush();assert.equal(reloaded.pending,0);assert.equal(await quarantined(),true);
+}finally{await f.clean();}});
+
+test('imagens da fila ficam em arquivos próprios e são apagadas após sincronizar; fila antiga continua válida',async()=>{const {CaptureQueue}=await import('../engine/src/capture-queue');const f=await fixture();try{
+ const uploads:Buffer[]=[];f.api.upload=async(data)=>{uploads.push(data);return 'test/image';};
+ const {readdir}=await import('node:fs/promises');
+ await f.vault.write('inbox.enc',[{message_id:'legacy',group_jid:'g@g.us',received_at:new Date().toISOString(),text:'',from_me:false,media_kind:'image',media_status:'ready',image:Buffer.from('LEGACY').toString('base64'),mime:'image/png'}]);
+ const queue=new CaptureQueue(f.api,f.vault);await queue.load();
+ const big=randomBytes(64*1024);
+ await queue.add({message_id:'novo',group_jid:'g@g.us',received_at:new Date().toISOString(),text:'',from_me:false,media_kind:'image',media_status:'ready',image:big,mime:'image/jpeg'});
+ await queue.add({message_id:'novo',group_jid:'g@g.us',received_at:new Date().toISOString(),text:'',from_me:false,media_kind:'image',media_status:'ready',image:big,mime:'image/jpeg'});
+ assert.equal(queue.pending,2);
+ assert.equal((await readdir(f.dir)).filter(p=>p.startsWith('media-')).length,1);
+ assert.ok((await readFile(join(f.dir,'inbox.enc'))).length<big.length);
+ await queue.flush();
+ assert.equal(queue.pending,0);
+ assert.deepEqual(uploads.map(b=>b.length),[6,big.length]);assert.ok(uploads[1].equals(big));
+ assert.equal((await readdir(f.dir)).filter(p=>p.startsWith('media-')).length,0);
+ const sent=f.calls.filter(c=>c.action==='capture');assert.deepEqual(sent.map(c=>c.payload.images),[['test/image'],['test/image']]);
+ assert.ok(sent.every(c=>!('image' in c.payload)&&!('media' in c.payload)));
+}finally{await f.clean();}});

@@ -7,7 +7,7 @@ import {randomBytes} from 'node:crypto';
 import {Vault} from '../engine/src/vault';
 import {BaileysTransport} from '../engine/src/baileys';
 import {disconnectCode,planReconnect,RECONNECT_CAP_MS,RECONNECT_JITTER_MS} from '../engine/src/reconnect';
-import {GROUPS_REFRESH_MS,classifyCycleError,cycleErrorLine,heartbeatPayload,shouldSyncGroups,supervise} from '../engine/src/supervisor';
+import {CREDENTIAL_GRACE_MS,CREDENTIAL_UNCONFIRMED_LINE,CYCLE_PAUSE_MS,GROUPS_REFRESH_MS,classifyCycleError,cycleErrorLine,heartbeatPayload,shouldSyncGroups,supervise} from '../engine/src/supervisor';
 
 const loggedOutCode=401;
 const restartRequiredCode=515;
@@ -261,4 +261,49 @@ test('queda de um socket substituído não derruba a sessão nova',async()=>{
   assert.equal(fx.transport.status,'disconnected');
   assert.equal(fx.queued.length,1);
  }finally{await fx.clean();}
+});
+
+test('lease vencida (notebook suspenso) não encerra o motor; o próximo heartbeat renova',async()=>{
+ const logs:string[]=[];let cycles=0;let shutdowns=0;
+ const result=await supervise({
+  heartbeat:async()=>{},
+  startTransport:async()=>{},
+  syncGroups:async()=>{},
+  flushCaptures:async()=>{throw Object.assign(new Error('Backend 409: Motor sem lease'),{status:409});},
+  work:async()=>{cycles++;if(cycles===1)throw Object.assign(new Error('Backend 403: Lease de motor inválida'),{status:403});},
+  shutdown:async()=>{shutdowns++;},
+  sleep:async()=>{},
+  log:line=>logs.push(line),
+  isStopped:()=>cycles>=2,
+  transportStatus:()=>'connected',
+  now:()=>0,
+ });
+ assert.equal(result,'stopped');assert.equal(shutdowns,0);
+ assert.ok(logs.includes('lease_expired: lease renovada no próximo heartbeat; nova tentativa em seguida'));
+ assert.ok(!logs.some(line=>line.startsWith('credential_rejected')));
+});
+
+test('403 momentâneo do backend não encerra; recusa persistente encerra após confirmação',async()=>{
+ const revoked=()=>Object.assign(new Error('Backend 403: Credencial inválida ou revogada'),{status:403});
+ // Falha isolada seguida de sucesso: continua.
+ {const logs:string[]=[];let beats=0;let shutdowns=0;let now=0;
+  const result=await supervise({
+   heartbeat:async()=>{beats++;now+=CYCLE_PAUSE_MS;if(beats<=2)throw revoked();},
+   startTransport:async()=>{},syncGroups:async()=>{},flushCaptures:async()=>{},work:async()=>{},
+   shutdown:async()=>{shutdowns++;},sleep:async()=>{},log:line=>logs.push(line),
+   isStopped:()=>beats>=4,transportStatus:()=>'connected',now:()=>now,
+  });
+  assert.equal(result,'stopped');assert.equal(shutdowns,0);
+  assert.deepEqual(logs.filter(line=>line.startsWith('credential')),[CREDENTIAL_UNCONFIRMED_LINE,CREDENTIAL_UNCONFIRMED_LINE]);}
+ // Recusa contínua: encerra só depois da janela de confirmação.
+ {const logs:string[]=[];let now=0;let shutdowns=0;
+  const result=await supervise({
+   heartbeat:async()=>{now+=30_000;throw revoked();},
+   startTransport:async()=>{},syncGroups:async()=>{},flushCaptures:async()=>{},work:async()=>{},
+   shutdown:async()=>{shutdowns++;},sleep:async()=>{},log:line=>logs.push(line),
+   isStopped:()=>false,transportStatus:()=>'disconnected',now:()=>now,
+  });
+  assert.equal(result,'credential_rejected');assert.equal(shutdowns,1);
+  assert.equal(logs.at(-1),'credential_rejected: motor encerrado');
+  assert.ok(now-30_000>=CREDENTIAL_GRACE_MS);}
 });
