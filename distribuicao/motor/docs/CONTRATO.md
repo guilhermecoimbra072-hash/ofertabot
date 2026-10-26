@@ -69,6 +69,8 @@ A empresa é bloqueada transacionalmente antes de modificar fila/limites. Só um
 5. Falhas recuperáveis antes do transporte: até 1–5 tentativas configuradas, espaçadas por 30×tentativa segundos, máximo 5 minutos.
 6. Agendamento vencido além de 60–3.600s configurados (padrão 300s): `on_hold=true`, sem descarga acumulada ao reconectar.
 
+Códigos HTTP do gateway do motor: 401/403 = credencial recusada; 503 = tente de novo (lease vencida, banco momentaneamente indisponível); 409 = regra de negócio; 400/413 = solicitação ou mídia inválida.
+
 Confirmação utilizada: evento Baileys `messages.update` com status `SERVER_ACK` ou superior. Limite de espera 45s. Isso não garante leitura, nem entrega exatamente uma vez.
 
 ## Arquivos e IA

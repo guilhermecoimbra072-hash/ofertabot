@@ -7,7 +7,7 @@ import {BaileysTransport} from './baileys.js';
 import {Worker} from './worker.js';
 import {CaptureQueue} from './capture-queue.js';
 import {normalizeExpectedPhone} from './account.js';
-import {classifyCycleError,cycleErrorLine,heartbeatPayload,supervise} from './supervisor.js';
+import {CREDENTIAL_UNCONFIRMED_LINE,classifyCycleError,cycleErrorLine,heartbeatPayload,supervise} from './supervisor.js';
 const required=['ENGINE_URL','ENGINE_TOKEN','ENGINE_SESSION_KEY'];for(const key of required)if(!process.env[key])throw new Error(`Configure ${key} no arquivo .env`);
 if(process.env.ENGINE_TRANSPORT!=='baileys')throw new Error('Para vincular sua conta, escolha explicitamente ENGINE_TRANSPORT=baileys. Simulação existe apenas nos testes.');
 const dir=resolve(process.env.ENGINE_DATA_DIR??'.engine-data');
@@ -17,7 +17,8 @@ const transport=new BaileysTransport(vault,normalizeExpectedPhone(process.env.EN
 const queue=new CaptureQueue(api,vault);await queue.load();
 let sources=new Set<string>();let stopped=false;let hb:ReturnType<typeof setInterval>|undefined;
 async function heartbeat(){const cfg=await api.call<{sources:string[]}>('heartbeat',heartbeatPayload(transport.status,transport.qr,transport.qrAt,Date.now()));sources=new Set(cfg.sources);await mkdir(dir,{recursive:true,mode:0o700});await writeFile(resolve(dir,'health.json'),JSON.stringify({last_heartbeat:new Date().toISOString(),status:transport.status,pending_captures:queue.pending}),{mode:0o600});}
-function onHeartbeatError(error:unknown){const kind=classifyCycleError(error);if(kind==='cycle_failed'){console.error('heartbeat_failed: backend sem comunicação');return;}console.error(cycleErrorLine(kind));if(kind==='credential_rejected'){process.exitCode=1;void shutdown();}}
+// O heartbeat periódico só registra; quem decide encerrar por credencial é o ciclo supervisionado.
+function onHeartbeatError(error:unknown){const kind=classifyCycleError(error);console.error(kind==='cycle_failed'?'heartbeat_failed: backend sem comunicação':kind==='credential_rejected'?CREDENTIAL_UNCONFIRMED_LINE:cycleErrorLine(kind));}
 async function shutdown(){if(stopped)return;stopped=true;clearInterval(hb);await transport.stop();await heartbeat().catch(()=>{});}
 process.on('SIGINT',()=>{void shutdown();});process.on('SIGTERM',()=>{void shutdown();});
 const result=await supervise({
